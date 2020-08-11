@@ -1,0 +1,33 @@
+{
+    "name": "battis/octoprint-pool",
+    "description": "Pooled services for a collection OctoPrint instances",
+    "license": "GPL-3.0",
+    "authors": [
+        {
+            "name": "Seth Battis",
+            "email": "seth@battis.net"
+        }
+    ],
+    "prefer-stable": true,
+    "minimum-stability": "dev",
+    "require": {
+        "php": "^7.3",
+        "ext-pdo": "*",
+        "ext-json": "*",
+        "vlucas/phpdotenv": "^3.4",
+        "monolog/monolog": "^2.0",
+        "tuupola/cors-middleware": "^1.1",
+        "tuupola/slim-jwt-auth": "^3.4",
+        "battis/restful-api": "dev-master"
+    },
+    "scripts": {
+        "post-install-cmd": [
+            "@php -r \"file_exists('.env') || copy('.env.example', '.env'); \""
+        ]
+    },
+    "autoload": {
+        "psr-4": {
+            "Battis\\": "src/api/"
+        }
+    }
+}

@@ -1,0 +1,7 @@
+RewriteEngine On
+
+# redirect everything non-existent except API requests to index.html
+RewriteRule ^api/.* - [QSA,L]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^ index.html [QSA,L]
