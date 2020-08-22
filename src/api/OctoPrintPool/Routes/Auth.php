@@ -54,7 +54,8 @@ class Auth extends RestfulEndpoint
             function(Request $request, Response $response) {
                 JWTOperations::logout();
                 return $response->withJson(null);
-            }
+            },
+            'logout'
         );
     }
 }

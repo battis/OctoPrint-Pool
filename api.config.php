@@ -101,7 +101,6 @@ API::create([
         ]),
         new JwtAuthentication([
             'path' => "$root/api/$version/auth/refresh",
-            'ignore' => "$root/api/$version/auth/logout",
             'header' => false,
             'cookie' => JWTOperations::COOKIE_REFRESH,
             'attribute' => JWTOperations::ATTR_TOKEN,

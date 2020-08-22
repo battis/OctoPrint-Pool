@@ -57,7 +57,9 @@ class Queue extends RestfulEndpoint
                     }
                 }
                 return $response->withJson($files);
-            }
+            },
+            'enqueue',
+            'file'
         );
         $this->get(
             '[/]',
@@ -65,14 +67,24 @@ class Queue extends RestfulEndpoint
                 return $response->withJson(File::getInstances(Condition::fromPairedValues(['queued' => true])));
             }
         );
+        $this->get(
+            '/{id}',
+            function (ServerRequest $request, Response  $response, array $args) {
+                $file = File::getInstanceById($args['id']);
+                return $response->withFileDownload($file->getPath(), $file->getFilename(), true);
+            },
+            'get',
+            'queued-file'
+        );
         $this->delete(
             '/{id}',
             function (ServerRequest $request, Response $response, array $args) {
                 $file = File::getInstanceById($args['id']);
                 $file->setQueued(false);
-                echo $file->isQueued();
                 return $response->withFileDownload($file->getPath(), $file->getFileName(), true);
-            }
+            },
+            'dequeue',
+            'file'
         );
     }
 }

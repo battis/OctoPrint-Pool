@@ -1,8 +1,5 @@
 RewriteEngine On
 
-# give PHP access to Authorization: Bearer header
-RewriteRule .* - [env=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
-
 # redirect everything to api
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
@@ -16,6 +13,9 @@ RewriteRule ^/?(\w+).* $1.php [QSA,L]
 <LimitExcept GET POST PUT DELETE OPTIONS>
     Require all denied
 </LimitExcept>
+
+# give PHP access to Authorization: Bearer header
+RewriteRule .* - [env=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
 
 # Make sure $HTTP_RAW_POST_DATA is deprecated warning does not appear
 php_value   always_populate_raw_post_data   -1

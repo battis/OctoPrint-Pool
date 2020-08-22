@@ -19,7 +19,7 @@ class File extends RestfulObject
 {
     const FILENAME = 'filename';
     const PATH = 'path';
-    const UPLOAD_USER = 'upload_user';
+    const TAGS = 'tags';
     const COMMENT = 'comment';
     const QUEUED = 'queued';
 
@@ -29,8 +29,8 @@ class File extends RestfulObject
     /** @var string */
     protected $path;
 
-    /** @var string|null */
-    protected $upload_user;
+    /** @var string[]|null */
+    protected $tags;
 
     /** @var string|null */
     protected $comment;
@@ -71,19 +71,22 @@ class File extends RestfulObject
     }
 
     /**
-     * @return string|null
+     * @return string[]|null
      * @throws PersistentObjectException
      */
-    public function getUploadUser(): string {
-        return $this->getField(self::UPLOAD_USER);
+    public function getTags() {
+        return $this->getField(self::TAGS);
     }
 
     /**
-     * @param string|null $uploadUser
+     * @param string|string[]|null $tags
      * @throws PersistentObjectException
      */
-    public function setUploadUser($uploadUser) {
-        $this->setField(self::UPLOAD_USER, $uploadUser);
+    public function setTags($tags) {
+        if (is_string($tags)) {
+            $tags = explode(',', $tags);
+        }
+        $this->setField(self::TAGS, $tags);
     }
 
     /**
@@ -128,8 +131,9 @@ class File extends RestfulObject
 
     public function toArray(array $fieldsToExpand = [], array $fieldsToSuppress = []): array
     {
-        $array = parent::toArray($fieldsToExpand, $fieldsToSuppress);
-        $array[self::QUEUED] = filter_var($array[self::QUEUED], FILTER_VALIDATE_BOOLEAN);
+        $array = parent::toArray($fieldsToExpand, array_merge($fieldsToSuppress, [self::TAGS, self::QUEUED]));
+        $array[self::TAGS] = $this->tags;
+        $array[self::QUEUED] = filter_var($this->queued, FILTER_VALIDATE_BOOLEAN);
         return $array;
     }
 }
