@@ -14,11 +14,17 @@
         "php": "^7.3",
         "ext-pdo": "*",
         "ext-json": "*",
+        "ext-openssl": "*",
         "vlucas/phpdotenv": "^3.4",
-        "monolog/monolog": "^2.0",
+        "php-di/php-di": "^6.2.2",
+        "slim/slim": "^4.5.0",
+        "slim/psr7": "^1.2.0",
+        "slim/http": "^1.0.0",
+        "slim/php-view": "^3.0",
+        "chadicus/slim-oauth2": "^3.1",
         "tuupola/cors-middleware": "^1.1",
-        "tuupola/slim-jwt-auth": "^3.4",
-        "battis/restful-api": "dev-master"
+        "crell/api-problem": "^3.2",
+        "monolog/monolog": "^2.0"
     },
     "scripts": {
         "post-install-cmd": [

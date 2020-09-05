@@ -33,7 +33,6 @@ phpdoc.xml
 !/var/README.md
 /var/queue/*
 !/var/queue/README.md
-/public/
 *.log*
 
 # js development
