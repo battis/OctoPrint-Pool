@@ -37,16 +37,16 @@ class DequeueFile
                     `id` = :id
         ");
         $file = null;
-        if (false !== $update->execute([
+        if ($update->execute([
                 'user' => '3dprint', // FIXME temporary hack
                 'id' => $args['id']
             ]) && $update->rowCount() > 0) {
-            if (false !== ($get->execute([
-                    'user' => '3dprint', // FIXME temporary hack
-                    'id' => $args['id']
-                ]))) {
+            if ($get->execute([
+                'user' => '3dprint', // FIXME temporary hack
+                'id' => $args['id']
+            ])) {
                 {
-                    if (false !== ($fileData = $get->fetch())) {
+                    if ($fileData = $get->fetch()) {
                         $file = new File($fileData);
                         $response = $response->withFileDownload($fileData['path'], $fileData['filename']);
                     }

@@ -21,7 +21,8 @@ $container->set(CorsMiddleware::class, function (ContainerInterface $container) 
         'origin' => $corsOrigin,
         'headers.allow' => json_decode($settings['headers.allow']),
         'methods' => json_decode($settings['methods']),
-        'cache' => $settings['cache']
+        'cache' => $settings['cache'],
+        'credentials' => true
     ]);
 });
 

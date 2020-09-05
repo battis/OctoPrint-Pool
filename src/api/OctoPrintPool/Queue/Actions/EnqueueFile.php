@@ -41,18 +41,18 @@ class EnqueueFile
         ");
         // TODO filter by extension
         foreach ($uploadedFiles as $uploadedFile) {
-            if (false !== $insert->execute([
+            if ($insert->execute([
+                'user' => '3dprint', // FIXME temporary hack
+                'filename' => $uploadedFile->getClientFilename(),
+                'path' => $this->hashUploadedFile($uploadedFile),
+                'tags' => implode(',', $request->getParsedBodyParam('tags', [])),
+                'comment' => $request->getParsedBodyParam('comment')
+            ])) {
+                if ($get->execute([
                     'user' => '3dprint', // FIXME temporary hack
-                    'filename' => $uploadedFile->getClientFilename(),
-                    'path' => $this->hashUploadedFile($uploadedFile),
-                    'tags' => implode(',', $request->getParsedBodyParam('tags', [])),
-                    'comment' => $request->getParsedBodyParam('comment')
+                    'id' => $this->pdo->lastInsertId()
                 ])) {
-                if (false !== $get->execute([
-                        'user' => '3dprint', // FIXME temporary hack
-                        'id' => $this->pdo->lastInsertId()
-                    ])) {
-                    if (false !== ($fileData = $get->fetch())) {
+                    if ($fileData = $get->fetch()) {
                         array_push($files, new File($fileData));
                     }
                 }

@@ -69,7 +69,6 @@ class File implements JsonSerializable
             switch ($property) {
                 case 'user':
                 case 'path':
-                case 'queued':
                     break;
                 case 'created':
                 case 'modified':

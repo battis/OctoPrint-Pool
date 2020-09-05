@@ -1,9 +1,7 @@
 <?php
 
 
-use Battis\OctoPrintPool\Queue\Actions\DequeueFile;
-use Battis\OctoPrintPool\Queue\Actions\EnqueueFile;
-use Battis\OctoPrintPool\Queue\Actions\ListQueue;
+use Battis\OAuth2\Actions\Options;
 use DI\Container;
 use Monolog\Handler;
 use Monolog\Logger;
@@ -62,15 +60,4 @@ $container->set(OAuth2Server::class, function (ContainerInterface $container) {
 // TODO get rid of this nonsense
 $container->set(PhpRenderer::class, function () {
     return new PhpRenderer(__DIR__ . '/../../vendor/chadicus/slim-oauth2-routes/templates');
-});
-
-// queue endpoints
-$container->set(ListQueue::class, function (ContainerInterface $container) {
-    return new ListQueue($container->get(PDO::class));
-});
-$container->set(EnqueueFile::class, function (ContainerInterface $container) {
-    return new EnqueueFile($container->get(PDO::class));
-});
-$container->set(DequeueFile::class, function (ContainerInterface $container) {
-    return new DequeueFile($container->get(PDO::class));
 });

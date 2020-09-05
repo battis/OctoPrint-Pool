@@ -9,7 +9,7 @@ use PDO;
 use Slim\Http\Response;
 use Slim\Http\ServerRequest;
 
-class ListQueue
+class PeekFile
 {
     /** @var PDO */
     private $pdo;
@@ -21,22 +21,21 @@ class ListQueue
 
     public function __invoke(ServerRequest $request, Response $response, array $args = [])
     {
-        // TODO there has to be a better way of doing this...
         $select = $this->pdo->prepare("
             SELECT * FROM `files`
                 WHERE
-                    `user` = '3dprint' AND
-                    `queued` = 1
-                ORDER BY
-                    `created` ASC,
-                    `filename` ASC
+                    `user` = :user AND
+                    `id` = :id
         ");
-        $files = [];
-        if ($select->execute()) {
-            while ($fileData = $select->fetch()) {
-                array_push($files, new File($fileData));
+        $file = null;
+        if ($select->execute([
+            'user' => '3dprint', // FIXME temporary hack
+            'id' => $args['id']
+        ])) {
+            if ($fileData = $select->fetch()) {
+                $file = new File($fileData);
             }
         }
-        return $response->withJson($files);
+        return $response->withJson($file);
     }
 }
