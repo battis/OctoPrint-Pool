@@ -3,6 +3,7 @@
 use Battis\CORS\Actions\Preflight;
 use Battis\OAuth2\Actions\Authorize;
 use Battis\OAuth2\Middleware\Authorization;
+use Battis\OctoPrintPool\Queue\Actions\AnonymousEnqueueFile;
 use Battis\OctoPrintPool\Queue\Actions\DequeueFile;
 use Battis\OctoPrintPool\Queue\Actions\EnqueueFile;
 use Battis\OctoPrintPool\Queue\Actions\ListQueue;
@@ -41,3 +42,7 @@ $app->group('', function () use ($app) {
         $queue->delete('/{id}', DequeueFile::class);
     });
 })->add(Authorization::class);
+
+$app->group('/anonymous', function (RouteCollectorProxyInterface $anonymous) {
+    $anonymous->post('/queue/{user_id}', AnonymousEnqueueFile::class);
+});
