@@ -1,27 +1,26 @@
 <?php
 
 
-use Battis\OAuth2\Actions\Options;
 use DI\Container;
-use Monolog\Handler;
+use Monolog\Handler\ErrorLogHandler;
+use Monolog\Handler\RotatingFileHandler;
 use Monolog\Logger;
-use Monolog\Processor\UidProcessor;
+use Monolog\Processor\WebProcessor;
 use OAuth2\GrantType;
 use OAuth2\Server as OAuth2Server;
 use OAuth2\Storage\Pdo as OAuth2PDOStorage;
 use Psr\Container\ContainerInterface;
-use Slim\Views\PhpRenderer;
 
 /** @var Container $container */
 
 $container->set(Logger::class, function (ContainerInterface $container) {
     $settings = $container->get('settings')[Logger::class];
     $logger = new Monolog\Logger($settings['name']);
-    $logger->pushProcessor(new UidProcessor());
+    $logger->pushProcessor(new WebProcessor());
     if (false === empty($settings['path'])) {
-        $logger->pushHandler(new Handler\StreamHandler($settings['path'], Logger::DEBUG));
+        $logger->pushHandler(new RotatingFileHandler($settings['path'], 0, Logger::DEBUG));
     } else {
-        $logger->pushHandler(new Handler\ErrorLogHandler(0, Logger::DEBUG, true, true));
+        $logger->pushHandler(new ErrorLogHandler(0, Logger::DEBUG, true, true));
     }
     return $logger;
 });
@@ -55,9 +54,4 @@ $container->set(OAuth2Server::class, function (ContainerInterface $container) {
     ]));
 
     return $server;
-});
-
-// TODO get rid of this nonsense
-$container->set(PhpRenderer::class, function () {
-    return new PhpRenderer(__DIR__ . '/../../vendor/chadicus/slim-oauth2-routes/templates');
 });

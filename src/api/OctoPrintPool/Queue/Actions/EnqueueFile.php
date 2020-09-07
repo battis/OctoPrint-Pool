@@ -6,7 +6,9 @@ namespace Battis\OctoPrintPool\Queue\Actions;
 
 use Battis\OctoPrintPool\Queue\File;
 use Battis\OctoPrintPool\Queue\FileManagementStrategies\Hashed;
+use Battis\OctoPrintPool\Traits\Logging;
 use Battis\OctoPrintPool\Traits\OAuthUserSettings;
+use Monolog\Logger;
 use PDO;
 use Slim\Http\Response;
 use Slim\Http\ServerRequest;
@@ -16,11 +18,12 @@ use Slim\Http\ServerRequest;
  */
 class EnqueueFile
 {
-    use OAuthUserSettings;
+    use OAuthUserSettings, Logging;
 
-    public function __construct(PDO $pdo)
+    public function __construct(PDO $pdo, Logger $logger)
     {
         $this->setPDO($pdo);
+        $this->setLogger($logger);
     }
 
     public function __invoke(ServerRequest $request, Response $response, array $args = [])
@@ -61,7 +64,12 @@ class EnqueueFile
                         'id' => $this->pdo->lastInsertId()
                     ])) {
                         if ($fileData = $get->fetch()) {
-                            array_push($files, new File($fileData));
+                            $file = new File($fileData);
+                            array_push($files, $file);
+                            $this->logger->info("Enqueued `{$file->getFilename()}` to {$this->oauthUserId} queue", [
+                                'file_id' => $file->getId(),
+                                'username_proxy' => $this->usernameProxy($file->getTags())
+                            ]);
                         }
                     }
                 }
