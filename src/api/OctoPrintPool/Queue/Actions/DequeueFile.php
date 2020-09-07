@@ -26,14 +26,14 @@ class DequeueFile
                 SET
                     `queued` = 0
                 WHERE
-                    `user` = :user AND
+                    user_id = :user AND
                     `id` = :id AND
                     `queued` = 1
         ");
         $get = $this->pdo->prepare("
             SELECT * FROM `files`
                 WHERE
-                    `user` = :user AND
+                    user_id = :user AND
                     `id` = :id
         ");
         $file = null;

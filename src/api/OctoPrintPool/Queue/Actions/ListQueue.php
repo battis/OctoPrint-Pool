@@ -25,7 +25,7 @@ class ListQueue
         $select = $this->pdo->prepare("
             SELECT * FROM `files`
                 WHERE
-                    `user` = '3dprint' AND
+                    user_id = '3dprint' AND
                     `queued` = 1
                 ORDER BY
                     `created` ASC,

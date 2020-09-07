@@ -24,7 +24,7 @@ class PeekFile
         $select = $this->pdo->prepare("
             SELECT * FROM `files`
                 WHERE
-                    `user` = :user AND
+                    user_id = :user AND
                     `id` = :id
         ");
         $file = null;

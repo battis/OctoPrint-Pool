@@ -13,6 +13,11 @@ function anyOf(array $keys, $default, callable $filter = null): string
     return $default;
 }
 
+function jsBool($val)
+{
+    return $val ? 'true' : 'false';
+}
+
 $user_id = null;
 $tags = [];
 foreach (explode('/', $_SERVER['PATH_INFO']) as $token) {
@@ -37,6 +42,10 @@ $comment = anyOf(['comment', 'c'], true, function ($val) {
     <meta charset="UTF-8">
     <title>Upload</title>
     <style>
+        :root {
+            --dropzone-padding: 2rem;
+        }
+
         body {
             position: fixed;
             left: 0;
@@ -53,11 +62,10 @@ $comment = anyOf(['comment', 'c'], true, function ($val) {
         #dropzone {
             border: 5px dashed hsla(0, 0%, 50%, 0.25);
             border-radius: 1rem;
-            padding: 2rem;
+            padding: var(--dropzone-padding);
             background: hsla(0, 0%, 100%, 0.75);
-            display: grid;
-            grid-template-columns: 1fr auto 1fr;
-            grid-template-rows: 1fr auto auto 1.618fr;
+            display: flex;
+            justify-content: center;
         }
 
         #dropzone.highlight {
@@ -66,9 +74,11 @@ $comment = anyOf(['comment', 'c'], true, function ($val) {
             color: white;
         }
 
+        .hidden {
+            display: none;
+        }
+
         .file-input {
-            grid-column-start: 2;
-            grid-row-start: 2;
             position: relative;
             overflow: hidden;
             display: inline-block;
@@ -79,7 +89,7 @@ $comment = anyOf(['comment', 'c'], true, function ($val) {
             border-radius: 1rem;
             background: hsla(0, 0%, 100%, 0.5);
             padding: 1rem 3rem;
-            font-size: xx-large;
+            font-size: x-large;
             font-weight: bolder;
         }
 
@@ -93,8 +103,8 @@ $comment = anyOf(['comment', 'c'], true, function ($val) {
         }
 
         #uploaded {
-            grid-column-start: 2;
-            grid-row-start: 3;
+            overflow-x: hidden;
+            overflow-y: auto;
         }
 
         .collection {
@@ -147,14 +157,17 @@ $comment = anyOf(['comment', 'c'], true, function ($val) {
             <button type="submit" id="submit">Upload</button>
         </form>
     </div>
-    <div id="uploaded"></div>
+    <div id="uploaded" class="hidden"></div>
 </div>
 
 <script>
     const dropzone = document.getElementById('dropzone');
     const file = document.getElementById('file');
     const uploaded = document.getElementById('uploaded');
-    const askForComment = <?= $comment ? 'true' : 'false' ?>;
+
+    dropzone.style.width = `calc(${dropzone.clientWidth}px - 2 * var(--dropzone-padding))`;
+    dropzone.style.height = `calc(${dropzone.clientHeight}px - 2 * var(--dropzone-padding))`;
+    uploaded.style.height = `calc(${dropzone.clientHeight}px - 2 * var(--dropzone-padding))`;
     document.getElementById('submit').style.display = 'none';
 
     const preventDefaults = event => {
@@ -175,7 +188,7 @@ $comment = anyOf(['comment', 'c'], true, function ($val) {
 
     const handleFiles = files => {
         let comment = "";
-        if (askForComment) {
+        if (<?= jsBool($comment) ?>) {
             comment = window.prompt(`What notes or instructions do you need to include with ${
                 Array.from(files)
                     .map(file => file.name).join(', ')
@@ -186,6 +199,7 @@ $comment = anyOf(['comment', 'c'], true, function ($val) {
         collection.classList.add('collection');
         collection.innerHTML = `${comment.length > 0 ? `<span class="comment">${comment}</span>` : ''}<ul></ul>`
         uploaded.appendChild(collection);
+        uploaded.classList.remove('hidden');
         for (const file of files) {
             uploadFile(file, comment, collection.querySelector('ul'));
         }
@@ -205,6 +219,7 @@ $comment = anyOf(['comment', 'c'], true, function ($val) {
             const fileItem = document.createElement('li');
             fileItem.innerHTML = `<div class="filename">${fileResponse.filename} uploaded.</div>`;
             collection.appendChild(fileItem);
+            fileItem.scrollIntoView();
         })
     }
 
