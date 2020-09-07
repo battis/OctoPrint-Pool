@@ -4,32 +4,34 @@
 namespace Battis\OctoPrintPool\Queue\Actions;
 
 
+use Battis\OctoPrintPool\PdoStorage;
 use Battis\OctoPrintPool\Queue\File;
+use Battis\OctoPrintPool\Traits\OAuthUserId;
 use PDO;
 use Slim\Http\Response;
 use Slim\Http\ServerRequest;
 
 class PeekFile
 {
-    /** @var PDO */
-    private $pdo;
+    use PdoStorage, OAuthUserId;
 
     public function __construct(PDO $pdo)
     {
-        $this->pdo = $pdo;
+        $this->setPDO($pdo);
     }
 
     public function __invoke(ServerRequest $request, Response $response, array $args = [])
     {
+        $this->setOauthUserId($request);
         $select = $this->pdo->prepare("
             SELECT * FROM `files`
                 WHERE
-                    user_id = :user AND
+                    `user_id` = :user_id AND
                     `id` = :id
         ");
         $file = null;
         if ($select->execute([
-            'user' => '3dprint', // FIXME temporary hack
+            'user_id' => $this->oauthUserId,
             'id' => $args['id']
         ])) {
             if ($fileData = $select->fetch()) {

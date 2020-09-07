@@ -31,16 +31,15 @@ class File implements JsonSerializable
     /** @var bool */
     private $queued;
 
-    /** @var DateTimeImmutable */
+    /** @var DateTimeImmutable | string */
     private $created;
 
-    /** @var DateTimeImmutable */
+    /** @var DateTimeImmutable | string */
     private $modified;
 
     /**
      * File constructor.
      * @param array $data
-     * @throws Exception if `created` or `modified` cannot be parsed by DateTimeImmutable
      */
     public function __construct(array $data)
     {
@@ -53,9 +52,16 @@ class File implements JsonSerializable
                     $this->queued = boolval($value);
                     break;
                 case 'created':
+                    /**
+                     * @noinspection PhpMissingBreakStatementInspection
+                     * fall-through on DateTimeImmutable fail to default behavior
+                     */
                 case 'modified':
-                    $this->$property = new DateTimeImmutable($value);
-                    break;
+                    try {
+                        $this->$property = new DateTimeImmutable($value);
+                        break;
+                    } catch (Exception $e) {
+                    }
                 default:
                     $this->$property = $value;
             }

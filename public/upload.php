@@ -44,6 +44,7 @@ $comment = anyOf(['comment', 'c'], true, function ($val) {
     <style>
         :root {
             --dropzone-padding: 2rem;
+            --dropzone-border-width: 5px;
         }
 
         body {
@@ -60,12 +61,10 @@ $comment = anyOf(['comment', 'c'], true, function ($val) {
         }
 
         #dropzone {
-            border: 5px dashed hsla(0, 0%, 50%, 0.25);
+            border: var(--dropzone-border-width) dashed hsla(0, 0%, 50%, 0.25);
             border-radius: 1rem;
             padding: var(--dropzone-padding);
             background: hsla(0, 0%, 100%, 0.75);
-            display: flex;
-            justify-content: center;
         }
 
         #dropzone.highlight {
@@ -74,8 +73,27 @@ $comment = anyOf(['comment', 'c'], true, function ($val) {
             color: white;
         }
 
+        #dropzone-contents {
+            display: flex;
+            flex-direction: row;
+            align-content: center;
+            justify-content: center;
+            align-items: center;
+        }
+
         .hidden {
             display: none;
+        }
+
+        .golden-center {
+            display: grid;
+            grid-template-rows: 1fr auto 1.618fr;
+            grid-template-columns: 1fr auto 1fr;
+        }
+
+        .golden-center .centered {
+            grid-row-start: 2;
+            grid-column-start: 2;
         }
 
         .file-input {
@@ -114,11 +132,6 @@ $comment = anyOf(['comment', 'c'], true, function ($val) {
             padding: 0.25rem 0.5rem;
         }
 
-        .collection:hover {
-            border: solid 1px hsla(0, 0%, 40%, 0.5);
-            background: hsla(0, 0%, 50%, 0.5);
-        }
-
         .collection ul {
             margin: 0;
             padding: 0;
@@ -149,15 +162,17 @@ $comment = anyOf(['comment', 'c'], true, function ($val) {
 </head>
 <body>
 
-<div id="dropzone">
-    <div class="file-input">
-        <form method="post" action="<?= $uploadEndpoint ?>">
-            <button><?= $buttonText ?></button>
-            <input type="file" id="file" name="file" multiple onchange="handleFiles(this.files)">
-            <button type="submit" id="submit">Upload</button>
-        </form>
+<div id="dropzone" class="golden-center">
+    <div class="centered" id="dropzone-contents">
+        <div class="file-input">
+            <form method="post" action="<?= $uploadEndpoint ?>">
+                <button><?= $buttonText ?></button>
+                <input type="file" id="file" name="file" multiple onchange="handleFiles(this.files)">
+                <button type="submit" id="submit">Upload</button>
+            </form>
+        </div>
+        <div id="uploaded" class="hidden"></div>
     </div>
-    <div id="uploaded" class="hidden"></div>
 </div>
 
 <script>
@@ -165,10 +180,20 @@ $comment = anyOf(['comment', 'c'], true, function ($val) {
     const file = document.getElementById('file');
     const uploaded = document.getElementById('uploaded');
 
-    dropzone.style.width = `calc(${dropzone.clientWidth}px - 2 * var(--dropzone-padding))`;
-    dropzone.style.height = `calc(${dropzone.clientHeight}px - 2 * var(--dropzone-padding))`;
-    uploaded.style.height = `calc(${dropzone.clientHeight}px - 2 * var(--dropzone-padding))`;
+    // FIXME need to double-check actual behavior  as a form...
     document.getElementById('submit').style.display = 'none';
+
+    const resizeToFit = () => {
+        // release size to fit new window
+        dropzone.style.width = 'calc(100% - 2 * (var(--dropzone-padding) + var(--dropzone-border-width)))';
+        dropzone.style.height = 'calc(100% - 2 * (var(--dropzone-padding) + var(--dropzone-border-width)))';
+        uploaded.style.maxHeight = '0';
+
+        // clamp size to window to prevent #uploaded from expanding #dropzone
+        dropzone.style.width = `calc(${dropzone.clientWidth}px - 2 * var(--dropzone-padding))`;
+        dropzone.style.height = `calc(${dropzone.clientHeight}px - 2 * var(--dropzone-padding))`
+        uploaded.style.maxHeight = `calc(${dropzone.clientHeight}px - 2 * var(--dropzone-padding))`;
+    }
 
     const preventDefaults = event => {
         event.preventDefault();
@@ -200,6 +225,7 @@ $comment = anyOf(['comment', 'c'], true, function ($val) {
         collection.innerHTML = `${comment.length > 0 ? `<span class="comment">${comment}</span>` : ''}<ul></ul>`
         uploaded.appendChild(collection);
         uploaded.classList.remove('hidden');
+        collection.scrollIntoView();
         for (const file of files) {
             uploadFile(file, comment, collection.querySelector('ul'));
         }
@@ -233,6 +259,8 @@ $comment = anyOf(['comment', 'c'], true, function ($val) {
         dropzone.addEventListener(event, unhighlight, false);
     });
     dropzone.addEventListener('drop', handleDrop, false);
+    window.onresize = resizeToFit;
+    resizeToFit();
 </script>
 
 </body>
