@@ -28,9 +28,7 @@ class EnqueueFile
         $user_id = $request->getAttribute('user_id', '3dprint'); // FIXME temporary hack
         $path = __DIR__ . '/../../../../../var/queue';
         $uploadedFiles = $request->getUploadedFiles();
-        $hashed = $this->getUserSetting($this->pdo, $user_id, 'hashed', true, function ($value) {
-            return filter_var($value, FILTER_VALIDATE_BOOLEAN);
-        });
+        $hashed = $this->getUserSetting($this->pdo, $user_id, 'queue_hashed', true, [$this, 'forceBoolean']);
         if (!$hashed) {
             $path = $this->getUserSetting($this->pdo, $user_id, 'queue_root', $path);
         }
@@ -52,11 +50,20 @@ class EnqueueFile
                     `id` = :id
         ");
         // TODO filter by extension
+        // FIXME $path will just keep growing for multiple files
         foreach ($uploadedFiles as $uploadedFile) {
             if ($hashed) {
                 $path = $this->hashUploadedFile($uploadedFile, $path);
             } else {
-                $path = $this->pathFromTags($uploadedFile, $path, $tags);
+                if ($this->getUserSetting($this->pdo, $user_id, 'queue_hierarchy', true, [$this, 'forceBoolean'])) {
+                    $path = $this->pathFromTags($uploadedFile, $path, $tags);
+                } elseif ($this->getUserSetting($this->pdo, $user_id, 'queue_sequential', false, [$this, 'forceBoolean'])) {
+                    $path = $this->addToSequence($uploadedFile, $path, $tags);
+                } else {
+                    $path .= '/' . $uploadedFile->getClientFilename();
+                    $uploadedFile->moveTo($path);
+                    $path = realpath($path);
+                }
             }
             if ($insert->execute([
                 'user' => $user_id,
@@ -90,7 +97,7 @@ class EnqueueFile
         return realpath($path);
     }
 
-    private function pathFromTags(UploadedFileInterface $uploadedFile, $path, $tags): string
+    private function pathFromTags(UploadedFileInterface $uploadedFile, string $path, array $tags = []): string
     {
         foreach ($tags as $tag) {
             $path .= "/$tag";
@@ -99,6 +106,21 @@ class EnqueueFile
             }
         }
         $path .= '/' . $uploadedFile->getClientFilename();
+        $uploadedFile->moveTo($path);
+        return realpath($path);
+    }
+
+    private function addToSequence(UploadedFileInterface $uploadedFile, string $path, array $tags = []): string
+    {
+        $sequence = 0;
+        foreach (scandir($path) as $item) {
+            $sequence = max($sequence, (int)preg_replace('/^(\d+)/', '$1', basename($item)));
+        }
+        $sequence++;
+        $basename = pathinfo($uploadedFile->getClientFilename(), PATHINFO_BASENAME);
+        $extension = pathinfo($uploadedFile->getClientFilename(), PATHINFO_EXTENSION);
+        $path = $path . '/' . sprintf('%04d', $sequence) . ' ' . $basename . (empty($tags) ? '' : ' (' . implode(', ',
+                    $tags) . ')') . '.' . $extension;
         $uploadedFile->moveTo($path);
         return realpath($path);
     }

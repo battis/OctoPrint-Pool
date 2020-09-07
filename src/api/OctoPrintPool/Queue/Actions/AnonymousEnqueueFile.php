@@ -24,7 +24,7 @@ class AnonymousEnqueueFile
 
     public function __invoke(ServerRequest $request, Response $response, array $args = [])
     {
-        if ($this->getUserSetting($this->pdo, $args['user_id'], 'allow_anonymous_upload', false)) {
+        if ($this->getUserSetting($this->pdo, $args['user_id'], 'queue_allow_anonymous_upload', false)) {
             $enqueueFile = new EnqueueFile($this->pdo);
             return $enqueueFile($request->withAttribute('user_id', $args['user_id']), $response);
         }

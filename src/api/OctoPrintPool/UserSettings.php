@@ -33,4 +33,9 @@ trait UserSettings
         }
         return $value;
     }
+
+    function forceBoolean($value): bool
+    {
+        return filter_var($value, FILTER_VALIDATE_BOOLEAN);
+    }
 }
