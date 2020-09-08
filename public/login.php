@@ -1,8 +1,24 @@
 <?php
 
-$client_id = $_GET['client_id'];
+use DI\Container;use Dotenv\Dotenv;
 
-// TODO look up scopes, display details
+require __DIR__ . '/../vendor/autoload.php';
+
+date_default_timezone_set('America/New_York');
+
+Dotenv::create(__DIR__ . '/../')->load();
+
+$container = new Container();
+$container->set('settings', require __DIR__ . '/../src/api/settings.php');
+require __DIR__ . '/../src/api/dependencies.php';
+
+$pdo = $container->get(PDO::class);
+
+$statement = $pdo->prepare("SELECT * FROM `oauth_clients` WHERE `client_id` = :client_id");
+$statement->execute(['client_id' => $_GET['client_id']]);
+$client = $statement->fetch();
+
+// TODO look up scopes
 // TODO real login before authorization
 
 ?><!DOCTYPE html>
@@ -101,8 +117,9 @@ EOT;
 
     ?>
     <div class="span">
-        <h1>Authorize <?= $client_id ?></h1>
-        <p>Do you authorize <?php echo htmlentities($client_id); ?>?</p>
+        <h1>Authorize <?= $client['display_name'] ?></h1>
+        <p>Do you authorize <?= $client['display_name'] ?>?</p>
+        <p><?= $client['description'] ?></p>
     </div>
     <input type="text" name="username" placeholder="Username">
     <input type="password" name="password" placeholder="Password">

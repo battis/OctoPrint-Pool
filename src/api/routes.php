@@ -2,6 +2,8 @@
 
 use Battis\CORS\Actions\Preflight;
 use Battis\OAuth2\Actions\Authorize;
+use Battis\OAuth2\Actions\RetrieveAuthorizationCode;
+use Battis\OAuth2\Actions\SSEAuthorizationCodeStash;
 use Battis\OAuth2\Middleware\Authorization;
 use Battis\OctoPrintPool\Queue\Actions\AnonymousEnqueueFile;
 use Battis\OctoPrintPool\Queue\Actions\DequeueFile;
@@ -32,6 +34,7 @@ $app->group('/oauth2', function (RouteCollectorProxyInterface $oauth2) use ($con
         Authorize::class
     )->setName('authorize');
     $oauth2->post(Token::ROUTE, new Token($container->get(Server::class)))->setName('token');
+    $oauth2->get('/state/{state}', RetrieveAuthorizationCode::class);
 });
 
 $app->group('', function () use ($app) {

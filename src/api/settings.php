@@ -27,8 +27,10 @@ return [
     ],
 
     OAuth2Server::class => [
-        'access_lifetime' => 518400, // seconds = 6 weeks (3600 is "normal")
-        'always_issue_new_refresh_token' => true
+        'access_lifetime' => getenv('ACCESS_TOKEN_LIFETIME') ?: 3600,
+        'always_issue_new_refresh_token' => true,
+        'refresh_token_lifetime' => getenv('REFRESH_TOKEN_LIFETIME') ?: 6 * 7 * 24 * 60 * 60,
+        'www_realm' => getenv('WWW_REALM') ?: 'OctoPrint Pool'
     ]
 ];
 

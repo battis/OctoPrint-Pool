@@ -44,7 +44,8 @@ $container->set(OAuth2Server::class, function (ContainerInterface $container) {
     $storage = new OAuth2PDOStorage($container->get(PDO::class));
 
     $server = new OAuth2Server($storage, [
-        'access_lifetime' => $settings['access_lifetime']
+        'access_lifetime' => $settings['access_lifetime'],
+        'www_realm' => $settings['www_realm']
     ]);
     $server->addGrantType(new GrantType\ClientCredentials($storage)); // FIXME needs to be removed or have scope
                                                                       //   limited to information about app

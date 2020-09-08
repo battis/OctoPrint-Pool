@@ -62,6 +62,16 @@ class Authorize
             $user_id
         );
 
-        return ResponseBridge::fromOauth2($oauth2Response);
+        $bridgedResponse = ResponseBridge::fromOauth2($oauth2Response);
+
+        // is the client expecting to get the code via SSE? then they can close the page now...
+        $sseAuthorizationCodeDeliveryUri = preg_replace('@^(.*/api/v\d+/oauth2)/.*@', '$1',
+                $request->getRequestTarget())
+            . '/state/' . $request->getParsedBodyParam('state');
+        if (strpos(implode($bridgedResponse->getHeader('Location')), $sseAuthorizationCodeDeliveryUri) === 0) {
+            $root = preg_replace('@^(.*)/api/v\d+/oauth2/.*@', '$1', $request->getRequestTarget());
+            return $response->withRedirect("$root/authorized");
+        }
+        return $bridgedResponse;
     }
 }
