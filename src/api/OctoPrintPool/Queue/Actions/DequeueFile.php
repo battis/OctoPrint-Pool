@@ -62,6 +62,6 @@ class DequeueFile
                 }
             }
         }
-        return $response->withJson($file);
+        return $response;
     }
 }
