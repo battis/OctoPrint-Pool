@@ -19,7 +19,6 @@ $statement->execute(['client_id' => $_GET['client_id']]);
 $client = $statement->fetch();
 
 // TODO look up scopes
-// TODO real login before authorization
 
 ?><!DOCTYPE html>
 <html lang="en">

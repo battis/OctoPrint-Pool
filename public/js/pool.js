@@ -1,4 +1,6 @@
-"use strict"
+/*jslint esversion: 8 */
+/*global OctoPrint */
+
 // TODO um... maybe webpack this bad boy _a bit_?
 
 /**
@@ -30,7 +32,7 @@ class OctoPrintPool_AuthorizationRequest {
 class OctoPrintPool_Authorization {
   /**
    * @param {string} authorization_code
-   * @param expires TODO what type is this?
+   * @param {string} expires
    * @param {string} state
    */
   constructor({authorization_code, expires, state}) {
@@ -118,7 +120,7 @@ class OctoPrintPool_API {
    * @return {Promise<string>}
    */
   async saveAccessToken(tokenData) {
-    tokenData = new OctoPrintPool_TokenData(tokenData)
+    tokenData = new OctoPrintPool_TokenData(tokenData);
     OctoPrint.settings.savePluginSettings(this.plugin_id, {
       access_token: tokenData.access_token,
       access_token_expiration: Date.now() + 1000 * tokenData.expires_in,
@@ -159,7 +161,7 @@ class OctoPrintPool_API {
       if (field === 'redirect_uri') {
         value = authorizationRequest.redirect_uri.pathname;
       }
-      authForm.innerHTML += `<input type="hidden" name="${field}" value="${value}">`
+      authForm.innerHTML += `<input type="hidden" name="${field}" value="${value}">`;
     }
     document.body.appendChild(authForm);
     authForm.submit();
@@ -214,11 +216,11 @@ class OctoPrintPool_API {
   static build_path(...args) {
     return args.map((part, i) => {
       if (i === 0) {
-        return String(part).trim().replace(/[\/]*$/g, '')
+        return String(part).trim().replace(/[\/]*$/g, '');
       } else {
-        return String(part).trim().replace(/(^[\/]*|[\/]*$)/g, '')
+        return String(part).trim().replace(/(^[\/]*|[\/]*$)/g, '');
       }
-    }).filter(x => x.length).join('/')
+    }).filter(x => x.length).join('/');
   }
 
   /**
@@ -238,7 +240,7 @@ class OctoPrintPool_API {
    * @param {boolean} json
    * @return {Promise<Response|any>}
    */
-  async call({endpoint, method, headers = {}, body = undefined, requiresAuthorization = true, json = true}) {
+  async call({endpoint, method, headers = {}, body, requiresAuthorization = true, json = true}) {
     if (endpoint === undefined) {
       throw "endpoint undefined";
     }
@@ -300,7 +302,7 @@ class OctoPrintPool_Queue extends OctoPrintPool_Plugin {
   async list() {
     return await this.api.call({
       endpoint: '/queue'
-    })
+    });
   }
 
   /**
