@@ -64,11 +64,13 @@ class Authorize
 
         $bridgedResponse = ResponseBridge::fromOauth2($oauth2Response);
 
-        // is the client expecting to get the code via SSE? then they can close the page now...
-        $sseAuthorizationCodeDeliveryUri = preg_replace('@^(.*/api/v\d+/oauth2)/.*@', '$1',
+        $stateEndpoint = preg_replace('@^(.*/api/v\d+/oauth2)/.*@', '$1',
                 $request->getRequestTarget())
             . '/state/' . $request->getParsedBodyParam('state');
-        if (strpos(implode($bridgedResponse->getHeader('Location')), $sseAuthorizationCodeDeliveryUri) === 0) {
+        // if the redirect_uri is to the /oauth2/state/:state endpoint so a front-end client can retrieve  the
+        // authorization code, don't redirect to redirect_uri, instead show the user a page thanking them for
+        // authorizing the app
+        if (strpos(implode($bridgedResponse->getHeader('Location')), $stateEndpoint) === 0) {
             $root = preg_replace('@^(.*)/api/v\d+/oauth2/.*@', '$1', $request->getRequestTarget());
             return $response->withRedirect("$root/authorized");
         }
