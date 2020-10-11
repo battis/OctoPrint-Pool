@@ -34,6 +34,7 @@ class EnqueueFile
         $strategy = $this->getUserSetting('queue_file_management_strategy', Hashed::class);
         $strategy = new $strategy();
         $tags = $request->getParsedBodyParam('tags', []);
+        $comment = $request->getParsedBodyParam('comment');
         $files = [];
         $insert = $this->pdo->prepare("
             INSERT INTO `files`
@@ -51,13 +52,13 @@ class EnqueueFile
                     `id` = :id
         ");
         foreach ($uploadedFiles as $uploadedFile) {
-            if ($path = $strategy($uploadedFile, $rootPath, $tags)) {
+            if ($path = $strategy($uploadedFile, $rootPath, $tags, $comment)) {
                 if ($insert->execute([
                     'user_id' => $this->oauthUserId,
                     'filename' => $uploadedFile->getClientFilename(),
                     'path' => $path,
                     'tags' => implode(',', $tags),
-                    'comment' => $request->getParsedBodyParam('comment')
+                    'comment' => $comment
                 ])) {
                     if ($get->execute([
                         'user_id' => $this->oauthUserId,

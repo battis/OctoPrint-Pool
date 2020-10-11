@@ -21,12 +21,19 @@ abstract class AbstractStrategy
      * @param UploadedFileInterface $uploadedFile
      * @param string $rootPath
      * @param array $tags (Optional, default `[]`)
+     * @param string|null $comment
      * @return string|false Complete path of uploaded file's location or `false` if file move cannot be accomplished
      */
-    abstract public function process(UploadedFileInterface $uploadedFile, string $rootPath, array $tags = []): string;
+    abstract public function process(
+        UploadedFileInterface $uploadedFile,
+        string $rootPath,
+        array $tags = [],
+        string $comment = null
+    ): string;
 
-    public function __invoke(UploadedFileInterface $uploadedFile, string $rootPath, array $tags = [])
+    public function __invoke(UploadedFileInterface $uploadedFile, string $rootPath, array $tags = [], string $comment
+    = null)
     {
-        return $this->process($uploadedFile, $rootPath, $tags);
+        return $this->process($uploadedFile, $rootPath, $tags, $comment);
     }
 }

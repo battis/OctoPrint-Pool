@@ -9,7 +9,12 @@ use Psr\Http\Message\UploadedFileInterface;
 class TagHierarchy extends AbstractStrategy
 {
 
-    public function process(UploadedFileInterface $uploadedFile, string $rootPath, array $tags = []): string
+    public function process(
+        UploadedFileInterface $uploadedFile,
+        string $rootPath,
+        array $tags = [],
+        string $comment = null
+    ): string
     {
         $path = $rootPath;
         foreach ($tags as $tag) {

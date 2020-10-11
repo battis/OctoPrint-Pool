@@ -4,6 +4,8 @@ use DI\Container;use Dotenv\Dotenv;
 
 require __DIR__ . '/../vendor/autoload.php';
 
+// FIXME register IP address in env.CORS_ORIGIN
+
 date_default_timezone_set('America/New_York');
 
 Dotenv::create(__DIR__ . '/../')->load();

@@ -9,7 +9,12 @@ use Psr\Http\Message\UploadedFileInterface;
 
 class Hashed extends AbstractStrategy
 {
-    public function process(UploadedFileInterface $uploadedFile, string $rootPath, array $tags = []): string
+    public function process(
+        UploadedFileInterface $uploadedFile,
+        string $rootPath,
+        array $tags = [],
+        string $comment = null
+    ): string
     {
         $extension = pathinfo($uploadedFile->getClientFilename(), PATHINFO_EXTENSION);
         do {
