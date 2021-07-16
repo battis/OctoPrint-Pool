@@ -23,17 +23,23 @@ class ListQueue
     public function __invoke(ServerRequest $request, Response $response, array $args = [])
     {
         $this->setOauthUserId($request);
-        $select = $this->pdo->prepare("
+        $filter = $request->getParsedBody();
+        $filter['user_id'] = $this->oauthUserId;
+        if (!isset($filter['queued'])) {
+            $filter['queued'] = 1;
+        }
+        $filterConditions = join(' AND ', array_map(function ($key) {
+            return "`$key` = :$key";
+        }, array_keys($filter)));
+        $select = $this->pdo->prepare('
             SELECT * FROM `files`
-                WHERE
-                    `user_id` = :user_id AND
-                    `queued` = 1
+                WHERE ' . $filterConditions . '
                 ORDER BY
-                    `created` ASC,
-                    `filename` ASC
-        ");
+                    `created`,
+                    `filename`
+        ');
         $files = [];
-        if ($select->execute(['user_id' => $this->oauthUserId])) {
+        if ($select->execute($filter)) {
             while ($fileData = $select->fetch()) {
                 array_push($files, new File($fileData));
             }

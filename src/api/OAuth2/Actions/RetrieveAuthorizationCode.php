@@ -8,6 +8,15 @@ use PDO;
 use Slim\Http\Response;
 use Slim\Http\ServerRequest;
 
+/**
+ * Class RetrieveAuthorizationCode
+ * @package Battis\OAuth2\Actions
+ *
+ * This is, clearly, a hack.
+ *
+ * FIXME restrict by requesting host?
+ * FIXME make this single shot -- authorization code can only be requested once?
+ */
 class RetrieveAuthorizationCode
 {
     /** @var PDO */
@@ -31,6 +40,7 @@ class RetrieveAuthorizationCode
         if (!empty($state)) {
             do {
                 $select->execute(['redirect_uri' => $redirect_uri]);
+                // TODO do I actually care if the connection was aborted?
                 if (connection_aborted()) {
                     return $response;
                 }

@@ -103,12 +103,32 @@ class OctoPrintPool_API {
     this.pool_url = new URL(pool_url);
     this.client_id = client_id;
     this.client_secret = client_secret;
+
+    const api = this;
+    this.credentialRetryStrategies = {
+      get CACHED() {
+        return api.refreshTokenGrant;
+      },
+      get REFRESH_TOKEN() {
+        return api.authorizationCodeGrant;
+      },
+      get AUTHORIZATION_CODE() {
+        return () => {
+          throw new Error("Authorization failure. Check OAuth configuration and OctoPrint Pool" +
+            " credentials.");
+        };
+      }
+    };
+    this.credentialRetryStrategy = undefined;
   }
 
   /**
    * @return {Promise<void>}
    */
   async updateTokens() {
+    if (this.access_token) {
+      return;
+    }
     const settings = await OctoPrint.settings.getPluginSettings(this.plugin_id);
     this.access_token = settings.access_token ? String(settings.access_token) : undefined;
     this.access_token_expiration = settings.access_token_expiration ? Number(settings.access_token_expiration) : undefined;
@@ -120,12 +140,20 @@ class OctoPrintPool_API {
    * @return {Promise<string>}
    */
   async saveAccessToken(tokenData) {
-    tokenData = new OctoPrintPool_TokenData(tokenData);
-    OctoPrint.settings.savePluginSettings(this.plugin_id, {
-      access_token: tokenData.access_token,
-      access_token_expiration: Date.now() + 1000 * tokenData.expires_in,
-      refresh_token: tokenData.refresh_token
-    });
+    ({
+      access_token: this.access_token,
+      access_token_expiration: this.access_token_expiration,
+      refresh_token: this.refresh_token
+    } = (new OctoPrintPool_TokenData(tokenData)));
+    try {
+      await OctoPrint.settings.savePluginSettings(this.plugin_id, {
+        access_token: tokenData.access_token,
+        access_token_expiration: Date.now() + 1000 * tokenData.expires_in,
+        refresh_token: tokenData.refresh_token
+      });
+    } catch (e) {
+      // TODO maybe don't ignore that we can't cache a token?
+    }
     return tokenData.access_token;
   }
 
@@ -191,17 +219,19 @@ class OctoPrintPool_API {
    * @return {Promise<string>}
    */
   async accessToken() {
-    // TODO handle authentication failures
     await this.updateTokens();
-    if (this.access_token && this.access_token_expiration > Date.now() - (30 * 1000)) { // 30 second buffer on expiry
+    if (this.access_token && this.access_token_expiration > Date.now()) {
+      this.credentialRetryStrategy = this.credentialRetryStrategies.CACHED;
       return this.access_token;
     }
 
     if (this.refresh_token) {
+      this.credentialRetryStrategy = this.credentialRetryStrategies.REFRESH_TOKEN;
       return await this.refreshTokenGrant();
     }
 
     if (this.pool_url) {
+      this.credentialRetryStrategy = this.credentialRetryStrategies.AUTHORIZATION_CODE;
       return await this.authorizationCodeGrant();
     }
 
@@ -262,7 +292,6 @@ class OctoPrintPool_API {
       headers.Authorization = `Bearer ${await this.accessToken()}`;
     }
 
-    // TODO deal with failed requests
     const response = await fetch(endpoint, {
       method: method,
       headers: headers,
@@ -270,6 +299,18 @@ class OctoPrintPool_API {
       credentials: 'include',
       body: body
     });
+
+    if (!response.ok && response.status >= 400 && response.status < 500) {
+      // FIXME does not retry successfully if access_token is invalid, but can be refreshed
+      // FIXME does not retry successfully if authorization code grant must be performed
+      try {
+        this.credentialRetryStrategy();
+      } catch (e) {
+        return undefined;
+      }
+      return this.call({endpoint, method, body, json, headers, requiresAuthorization});
+    }
+
     if (json) {
       return await response.json();
     }
