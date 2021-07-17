@@ -1,0 +1,18 @@
+# Dependencies
+/vendor/
+
+# System Files
+.DS_Store
+Thumbs.db
+
+# PHP development
+/coverage/
+.phpunit.result.cache
+
+# JetBrains
+/.idea/dataSources/
+/.idea/dataSources.xml
+/.idea/deployment.xml
+/.idea/sshConfigs.xml
+/.idea/vcs.xml
+/.idea/webServers.xml

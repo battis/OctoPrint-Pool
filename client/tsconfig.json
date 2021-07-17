@@ -1,0 +1,17 @@
+{
+    "extends": "@tsconfig/recommended/tsconfig.json",
+    "compilerOptions": {
+        "noImplicitAny": false,
+        "jsx": "react",
+        "jsxFactory": "JSXFactory.createElement",
+        "jsxFragmentFactory": "JSXFactory.createFragment",
+        "baseUrl": "./src"
+    },
+    "include": [
+        "src/**/*",
+    ],
+    "exclude": [
+        "node_modules",
+        "dist"
+    ]
+}

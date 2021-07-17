@@ -1,0 +1,17 @@
+# Dependencies
+/node_modules/
+
+# Build
+/dist/
+# System Files
+.DS_Store
+Thumbs.db
+
+# JetBrains
+/.idea/dataSources/
+/.idea/dataSources.*
+/.idea/deployment.xml
+/.idea/vcs.xml
+/.idea/webServers.xml
+/.idea/runConfigurations/Client_Dev_Server.xml
+/.idea/sshConfigs.xml
