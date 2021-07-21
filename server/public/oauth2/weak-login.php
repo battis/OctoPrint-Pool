@@ -1,9 +1,12 @@
 <?php
 
-use Battis\WebApp\Server\OAuth2\Actions\Authorize;use DI\Container;use Dotenv\Dotenv;
+use Battis\OctoPrintPool\OAuth2\Actions\WeakAuthorize;
+use DI\Container;
+use Dotenv\Dotenv;
 
 // TODO#BUILD update to correct relative path
 $pathToApi = __DIR__ . '/../../../OctoPrint/OctoPrint-Pool/server';
+
 require $pathToApi . '/vendor/autoload.php';
 
 Dotenv::createImmutable($pathToApi . '/..')->load();
@@ -40,7 +43,8 @@ $client = $statement->fetch();
             <h2 class="title"><?= $client['display_name'] ?></h2>
         </div>
         <div class="body">
-            <form class="form" method="post" action="<?= $_ENV['PUBLIC_PATH'] ?>/api/v1/oauth2<?= Authorize::ROUTE?>">
+            <form class="form" method="post" action="<?= $_ENV['PUBLIC_PATH'] ?>/api/v1/oauth2<?=
+            WeakAuthorize::ROUTE?>">
                 <p><?= $client['description'] ?></p>
                 <div class="form-controls">
                     <?php
@@ -52,10 +56,8 @@ EOT;
                     }
 
                     ?>
-                    <label for="username">username</label>
+                    <label for="username"><?= $_ENV['WEAK_AUTHORIZE_USERNAME_LABEL'] ?: 'username' ?></label>
                     <input id="username" type="text" name="username" autocomplete="username">
-                    <label for="password">password</label>
-                    <input id="password" type="password" name="password" autocomplete="current-password">
                 </div>
                 <div class="buttons">
                     <button class="default" type="submit" name="is_authorized" value="yes">Login</button>

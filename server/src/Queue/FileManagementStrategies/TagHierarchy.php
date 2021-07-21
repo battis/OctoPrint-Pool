@@ -6,6 +6,7 @@ namespace Battis\OctoPrintPool\Queue\FileManagementStrategies;
 
 use Psr\Http\Message\UploadedFileInterface;
 
+// FIXME right now this overwrites files, rather than auto-sequencing them
 class TagHierarchy extends AbstractStrategy
 {
 

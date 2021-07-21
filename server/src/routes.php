@@ -2,6 +2,7 @@
 
 namespace Battis\OctoPrintPool;
 
+use Battis\OctoPrintPool\OAuth2\Actions\WeakAuthorize;
 use Battis\OctoPrintPool\Queue\Actions\AnonymousEnqueueFile;
 use Battis\OctoPrintPool\Queue\Actions\DequeueFile;
 use Battis\OctoPrintPool\Queue\Actions\EnqueueFile;
@@ -27,11 +28,8 @@ $app->setBasePath($_ENV['PUBLIC_PATH'] . "/api/$version");
 $app->options(Preflight::ROUTE, Preflight::class);
 
 $app->group('/oauth2', function (Collector $oauth2) use ($container) {
-    $oauth2->map(
-        ['GET', 'POST'],
-        Authorize::ROUTE,
-        Authorize::class
-    )->setName('authorize');
+    $oauth2->map(['GET', 'POST'], Authorize::ROUTE, Authorize::class)->setName('authorize');
+    $oauth2->map(['GET', 'POST'], WeakAuthorize::ROUTE, WeakAuthorize::class)->setName('weak-authorize');
     $oauth2->post(Token::ROUTE, new Token($container->get(Server::class)))->setName('token');
 });
 
@@ -47,4 +45,3 @@ $app->group('', function () use ($app) {
 $app->group('/anonymous', function (Collector $anonymous) {
     $anonymous->post('/queue/{user_id}', AnonymousEnqueueFile::class);
 });
-

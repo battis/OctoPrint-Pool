@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Battis\OctoPrintPool;
 
 use Battis\WebApp\Server\OAuth2\Middleware\Authorization;
@@ -16,9 +15,8 @@ use Tuupola\Middleware\CorsMiddleware;
 $container->set(CorsMiddleware::class, function (ContainerInterface $container) {
     $settings = $container->get('settings')[CorsMiddleware::class];
     $corsOrigin = json_decode($settings['origin']);
-    // TODO set up some wildcarding for multiple instances
     if (($i = array_search('@', $corsOrigin, true)) !== false) {
-        $corsOrigin[$i] = 'http' . ($_SERVER['HTTPS'] ? 's' : '') . "://{$_SERVER['HTTP_HOST']}";
+        $corsOrigin[$i] = ($_SERVER['HTTPS'] ? 'https' : 'http') . "://{$_SERVER['HTTP_HOST']}";
     }
     return new CorsMiddleware([
         'origin' => $corsOrigin,
@@ -34,3 +32,4 @@ $container->set(Authorization::class, function (ContainerInterface $container) {
 });
 
 $app->add(CorsMiddleware::class);
+$app->addBodyParsingMiddleware();

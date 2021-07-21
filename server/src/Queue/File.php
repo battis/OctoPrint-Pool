@@ -8,6 +8,7 @@ use DateTimeImmutable;
 use Exception;
 use JsonSerializable;
 
+// TODO report file size
 class File implements JsonSerializable
 {
     /** @var string */

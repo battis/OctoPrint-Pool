@@ -1,0 +1,104 @@
+@use "~@battis/web-app-client/src/stylesheets/colors";
+@use "~@battis/web-app-client/src/stylesheets/spacing";
+@use "~@battis/web-app-client/src/stylesheets/css_tricks";
+
+body {
+  overflow: hidden;
+  background: none transparent;
+
+  .golden-wrapper {
+    $-dropzone-margin: css_tricks.$one-px;
+    $-dropzone-padding: 2em;
+    $-dropzone-border-width: 5px;
+    $-check-color: #11cd00;
+
+    $-total-padding: calc(2 * (#{$-dropzone-padding} + #{$-dropzone-border-width} + #{$-dropzone-margin}));
+    margin: $-dropzone-margin;
+    padding: $-dropzone-padding;
+    height: calc(100% - #{$-total-padding});
+    width: calc(100% - #{$-total-padding});
+
+    border: dashed $-dropzone-border-width colors.$gray;
+    border-radius: min(5vh, 5vw);
+
+    .golden-content {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+
+      form {
+        .message {
+          text-align: center;
+          margin: 0 0 spacing.$padding-major 0;
+        }
+
+        input[type="file"] {
+          margin: 0;
+          padding: 0;
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          opacity: 0;
+        }
+      }
+
+      .uploaded {
+        background: colors.transparent(colors.$background);
+        margin-left: 1em;
+        padding: spacing.$padding-major;
+        border: solid css_tricks.$one-px colors.$gray;
+        border-radius: spacing.$border-radius-major;
+
+        .batch {
+          border-bottom: solid css_tricks.$one-px colors.$gray;
+          padding: spacing.$padding-minor;
+
+          .comment {
+            font-style: italic;
+            margin: 0 0 spacing.$padding-minor 0;
+          }
+
+          .files {
+            display: flex;
+            flex-direction: column;
+            margin: 0 spacing.$padding-minor;
+
+            .file {
+              display: flex;
+              flex-direction: row;
+              height: fit-content;
+
+              .icon {
+                height: 1em;
+                width: 1em;
+                margin-right: 0.5em;
+
+                .check {
+                  @include colors.fill($-check-color);
+                }
+
+                .ballot-box {
+                  fill: none;
+                }
+              }
+            }
+          }
+        }
+
+        .batch:last-of-type {
+          border: none;
+        }
+      }
+
+      .uploaded:empty {
+        display: none;
+      }
+    }
+  }
+
+  .golden-wrapper.target {
+    @include colors.background(colors.transparent(colors.$focus));
+  }
+}

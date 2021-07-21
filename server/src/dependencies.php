@@ -33,6 +33,7 @@ $container->set(Logger::class, function (ContainerInterface $container) {
 
 $container->set(PDO::class, function (ContainerInterface $container) {
     $settings = $container->get('settings')[PDO::class];
+    
     $pdo = new PDO($settings['dsn'], $settings['username'], $settings['password']);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);

@@ -17,7 +17,6 @@ module.exports = (env, argv) => {
         : undefined;
 
     // Version/development-based configuration of PUBLIC_PATH and API_URL from env
-    // defined for TypeScript in /grocery-list.d.ts
     let publicPath = process.env.PUBLIC_PATH;
     let apiUrl = process.env.API_URL;
     let oauthClientId = process.env.OAUTH_CLIENT_ID;
@@ -42,7 +41,7 @@ module.exports = (env, argv) => {
     return {
         mode: mode,
         entry: {
-            //'octoprint-pool': `./src/index.tsx`
+            'octoprint-pool': `./src/index.tsx`
             // 'service-worker': './src/service-worker.ts',
         },
         output: {
@@ -66,7 +65,7 @@ module.exports = (env, argv) => {
                     exclude: /node_modules/
                 },
                 {
-                    test: /\.s?css$/,
+                    test: /\.(sa|sc|c)ss$/,
                     exclude: /node_modules/,
                     use: [
                         isDevelopmentMode
@@ -75,6 +74,7 @@ module.exports = (env, argv) => {
                         {
                             loader: 'css-loader',
                             options: {
+                                // apply postcss-loader (but not sass-loader) to @imports (sass-loader process @uses)
                                 importLoaders: 1
                             }
                         },
@@ -85,10 +85,7 @@ module.exports = (env, argv) => {
                                     plugins: [
                                         [
                                             'postcss-preset-env',
-                                            'autoprefix',
-                                            {
-                                                // Options
-                                            }
+                                            'autoprefixer'
                                         ]
                                     ]
                                 }
@@ -171,7 +168,7 @@ module.exports = (env, argv) => {
                     process.env.TEMPLATE_PATH,
                     `index.html`
                 ),
-                chunks: ['grocery-list'], // TODO#DEV make sure all chunks are loaded!
+                chunks: ['octoprint-pool'], // TODO#DEV make sure all chunks are loaded!
                 hash: true
             }),
             new MiniCssExtractPlugin({
