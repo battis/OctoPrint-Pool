@@ -2,7 +2,9 @@
 /node_modules/
 
 # Build
+/.pwa-asset-generator.cache
 /dist/
+
 # System Files
 .DS_Store
 Thumbs.db

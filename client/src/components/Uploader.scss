@@ -2,24 +2,29 @@
 @use "~@battis/web-app-client/src/stylesheets/spacing";
 @use "~@battis/web-app-client/src/stylesheets/css_tricks";
 
-body {
+$-dropzone-margin: css_tricks.$one-px;
+$-dropzone-padding: 2em;
+$-dropzone-border-width: 5px;
+$-dropzone-border-color: colors.$gray;
+$-dropzone-highlight-color: colors.$focus;
+$-file-check-color: #11cd00;
+
+/* transparent background for seamless iframe embedding */
+body > #root > .uploader {
   overflow: hidden;
   background: none transparent;
+}
 
+.uploader {
   .golden-wrapper {
-    $-dropzone-margin: css_tricks.$one-px;
-    $-dropzone-padding: 2em;
-    $-dropzone-border-width: 5px;
-    $-check-color: #11cd00;
-
     $-total-padding: calc(2 * (#{$-dropzone-padding} + #{$-dropzone-border-width} + #{$-dropzone-margin}));
     margin: $-dropzone-margin;
     padding: $-dropzone-padding;
     height: calc(100% - #{$-total-padding});
     width: calc(100% - #{$-total-padding});
 
-    border: dashed $-dropzone-border-width colors.$gray;
-    border-radius: min(5vh, 5vw);
+    border: dashed $-dropzone-border-width $-dropzone-border-color;
+    border-radius: max(2 * #{spacing.$padding-major}, min(5vh, 5vw));
 
     .golden-content {
       display: flex;
@@ -76,7 +81,7 @@ body {
                 margin-right: 0.5em;
 
                 .check {
-                  @include colors.fill($-check-color);
+                  @include colors.fill($-file-check-color);
                 }
 
                 .ballot-box {
@@ -97,8 +102,10 @@ body {
       }
     }
   }
+}
 
-  .golden-wrapper.target {
-    @include colors.background(colors.transparent(colors.$focus));
+.uploader.target {
+  .golden-wrapper {
+    @include colors.background(colors.transparent($-dropzone-highlight-color));
   }
 }

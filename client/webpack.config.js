@@ -1,5 +1,5 @@
 const path = require('path');
-const pathToEnv = path.join(__dirname, '../.env');
+const pathToEnv = path.join(__dirname, '../env/.env');
 require('dotenv').config({ path: pathToEnv });
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const CopyWebPackPlugin = require('copy-webpack-plugin');
@@ -158,7 +158,8 @@ module.exports = (env, argv) => {
                             !/README\.md$/.test(path) // don't publish repo files
                     },
                     {
-                        from: path.join(__dirname, '../server/public')
+                        from: path.join(__dirname, '../server/public'),
+                        to: path.join(__dirname, process.env.DIST_PATH, 'api')
                     }
                 ]
             }),

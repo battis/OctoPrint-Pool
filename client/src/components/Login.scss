@@ -1,0 +1,10 @@
+@use "~@battis/web-app-client/src/stylesheets/colors";
+@use "~@battis/web-app-client/src/stylesheets/spacing";
+
+.octoprint-login {
+  .placeholder {
+    border-color: colors.$transparent;
+    background: colors.$transparent;
+    color: colors.$transparent;
+  }
+}

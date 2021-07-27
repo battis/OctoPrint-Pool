@@ -86,9 +86,9 @@
         "test:cov": "jest --coverage"
     },
     "jshintConfig": {
-        "esversion": 8,
-        "strict": false,
-        "-W014": true
+        "esversion": 9,
+        "node": true,
+        "laxbreak": true
     },
     "prettier": {
         "singleQuote": true,

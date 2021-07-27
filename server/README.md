@@ -9,4 +9,5 @@ Manage a printer pool of OctoPrint instances
 ### Installation
 
   1. `composer install --no-dev --prefer-dist`
-  2. Edit `/.env`
+  2. Edit `env/.env`
+  3. Optional: copy env/99-octoprint-pool.ini to `/etc/php/VERSION/apache2/conf.d/` or edit `/etc/php/VERSION/apache2/php.ini` to increase maximum file upload size.

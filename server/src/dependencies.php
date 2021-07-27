@@ -2,6 +2,7 @@
 
 namespace Battis\GroceryList;
 
+use Battis\OctoPrintPool\ClassMap;
 use Battis\WebApp\Server\API\Objects\AbstractObject;
 use DI\Container;
 use Monolog\Handler\ErrorLogHandler;
@@ -17,7 +18,7 @@ use Psr\Container\ContainerInterface;
 /** @var Container $container */
 
 // TODO#BULD create and import a ClassMap implementation
-//AbstractObject::init(ClassMap::class);
+AbstractObject::init(ClassMap::class);
 
 $container->set(Logger::class, function (ContainerInterface $container) {
     $settings = $container->get('settings')[Logger::class];
@@ -33,7 +34,7 @@ $container->set(Logger::class, function (ContainerInterface $container) {
 
 $container->set(PDO::class, function (ContainerInterface $container) {
     $settings = $container->get('settings')[PDO::class];
-    
+
     $pdo = new PDO($settings['dsn'], $settings['username'], $settings['password']);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);

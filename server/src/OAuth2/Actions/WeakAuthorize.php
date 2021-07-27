@@ -40,8 +40,7 @@ class WeakAuthorize
 
         $authorized = $oauth2Request->request('authorized');
         if (empty($authorized)) {
-            return $response
-                ->withRedirect('../../../oauth2/login?' . http_build_query($request->getParams()));
+            return $response->withStatus(401);
         }
 
         // TODO this is a hack
@@ -55,12 +54,11 @@ class WeakAuthorize
                         echo 'user exists';
                         $user_id = $user['username'];
                     }
-                }
-            } else {
-                echo 'creating user';
-                $statement = $this->pdo->prepare("INSERT INTO `oauth_users` SET `username` = :username");
-                if ($statement->execute(['username' => $username])) {
-                    $user_id = $username;
+                } else {
+                    $statement = $this->pdo->prepare("INSERT INTO `oauth_users` SET `username` = :username");
+                    if ($statement->execute(['username' => $username])) {
+                        $user_id = $username;
+                    }
                 }
             }
         }
@@ -68,7 +66,7 @@ class WeakAuthorize
         $this->server->handleAuthorizeRequest(
             $oauth2Request,
             $oauth2Response,
-            $authorized === 'yes' && false === empty($user_id), // TODO that is, the form field 'authorized' = 'yes'
+            boolval($authorized) === true && !empty($user_id), // TODO that is, the form field 'authorized' = 'yes'
             $user_id
         );
 

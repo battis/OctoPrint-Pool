@@ -8,7 +8,7 @@ use Slim\Factory\AppFactory;
 
 require __DIR__ . '/../vendor/autoload.php';
 
-Dotenv::createImmutable(__DIR__ . '/../../')->load();
+Dotenv::createImmutable(__DIR__ . '/../../env/')->load();
 date_default_timezone_set($_ENV['TIMEZONE']);
 
 $debugging = boolval($_ENV['DEBUGGING']);

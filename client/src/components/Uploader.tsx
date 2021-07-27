@@ -89,79 +89,92 @@ export default class Uploader extends Component {
 
   public render() {
     this.params = Query.parseGetParameters();
-    this.element = Visual.goldenCenter(<>
-      <form>
-        <input type='file' name='file' multiple={true} onchange={this.handleFileDrop.bind(this)} />
-        {this.message && <p class='message'>{this.message.finalize()}</p>}
-        <button
-          onclick={this.selectFiles.bind(this)}>{this.button.finalize()}</button>
-      </form>
-      <div class='uploaded' />
-    </>);
+    this.element = <div class='uploader'>
+      {Visual.goldenCenter(<>
+        <form>
+          <input type='file' name='file' multiple={true} onchange={this.handleFileDrop.bind(this)} />
+          {this.message && <p class='message'>{this.message.finalize()}</p>}
+          <button
+            onclick={this.selectFiles.bind(this)}>{this.button.finalize()}</button>
+        </form>
+        <div class='uploaded' />
+      </>)}
+    </div>;
 
-    for (const eventType in ['dragenter', 'dragover']) {
-      this.element.addEventListener(eventType, e => {
-        e.preventDefault();
-        e.stopPropagation();
-        this.element.classList.add('target');
-      }, false);
-    }
-
-    this.element.addEventListener('dragleave', event => {
-      event.preventDefault();
-      event.stopPropagation();
-      this.element.classList.remove('target');
-    });
-
+    this.enableDragAndDrop();
+    this.element.addEventListener('dragenter', this.highlightTarget.bind(this), false);
+    this.element.addEventListener('dragover', this.highlightTarget.bind(this), false);
+    this.element.addEventListener('dragleave', this.unhighlightTarget.bind(this), false);
     this.element.addEventListener('drop', this.handleFileDrop.bind(this), false);
 
     return this.element;
   }
 
+  private enableDragAndDrop() {
+    const enable = event => {
+      event.preventDefault();
+    };
+
+    this.element.addEventListener('dragenter', enable, false);
+    this.element.addEventListener('dragover', enable, false);
+  }
+
+  private highlightTarget() {
+    this.element.classList.add('target');
+  }
+
+  private unhighlightTarget() {
+    this.element.classList.remove('target');
+  }
+
   private selectFiles(event) {
-    event.preventDefault();
     event.stopPropagation();
     this.element.querySelector('input')?.click();
   }
 
   private handleFileDrop(event) {
     event.preventDefault();
-    event.stopPropagation();
-
+    this.unhighlightTarget();
     const files = event.dataTransfer?.files || event.target.files;
     files && this.uploadFiles(files);
   }
 
   private uploadFiles(files) {
-   const uploadFile = async (file: File, comment, container) => {
+    const uploadFile = async (file: File, comment, container) => {
       const status = container.appendChild(<div class='file'><Icon.Loading /> {file.name}</div>);
-      const response = await API.post({
+      const response: [] = await API.post({
         endpoint: path.join('anonymous/queue', this.queue),
         body: Query.getFormData({
           file, comment, 'tags[]': this.tags
         })
       }, false);
-      for (const item of response) {
-        render(status, <><Icon.Checked /> {item.filename}</>);
+      if (response.length === 0) {
+        render(status, <><Icon.Close class={'danger'} /> {file.name}</>);
+      } else {
+        for (const item of response) {
+          render(status, <><Icon.Checked /> {item['filename']}</>);
+        }
       }
-    }
+    };
 
     let comment: Nullable<string> = null;
     if (this.comment) {
       comment = window.prompt(this.comment.finalize(files));
-      if ( comment === null) {
+      if (comment === null) {
         return;
       }
     }
+
     const container = <div class='files' />;
-    const collection: HTMLElement = <div class='batch'>
-      {comment?.length && <p class='comment'>{comment}</p>}
-      {container}
-    </div>;
-    this.uploaded.appendChild(collection);
-    collection.scrollIntoView();
+    this.uploaded.appendChild<HTMLElement>(
+      <div class='batch'>
+        {comment?.length && <p class='comment'>{comment}</p>}
+        {container}
+      </div>
+    ).scrollIntoView();
+
     for (const file of files) {
-      uploadFile(file, comment, container);
+      uploadFile(file, comment, container).then();
     }
   }
 }
