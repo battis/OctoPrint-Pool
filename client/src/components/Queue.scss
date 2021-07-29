@@ -10,12 +10,12 @@ $-dropzone-highlight-color: colors.$focus;
 $-file-check-color: #11cd00;
 
 /* transparent background for seamless iframe embedding */
-body > #root > .uploader {
+body > #root > .queue.uploader {
   overflow: hidden;
   background: none transparent;
 }
 
-.uploader {
+.queue.uploader {
   .golden-wrapper {
     $-total-padding: calc(2 * (#{$-dropzone-padding} + #{$-dropzone-border-width} + #{$-dropzone-margin}));
     margin: $-dropzone-margin;

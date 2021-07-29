@@ -4,78 +4,91 @@
 namespace Battis\OctoPrintPool\Queue\Actions;
 
 
-use Battis\OctoPrintPool\Queue\File;
 use Battis\OctoPrintPool\Queue\FileManagementStrategies\Hashed;
-use Battis\WebApp\Server\OAuth2\Traits\OAuthUserSettings;
+use Battis\OctoPrintPool\Queue\Objects\File;
+use Battis\OctoPrintPool\Queue\Objects\Queue;
+use Battis\WebApp\Server\API\Actions\AbstractAction;
+use Battis\WebApp\Server\API\Actions\Traits\RecursivelyInclude;
 use Battis\WebApp\Server\Traits\Logging;
+use Exception;
+use Monolog\Logger;
 use PDO;
-use Psr\Log\LoggerInterface;
+use Psr\Http\Message\ResponseInterface;
 use Slim\Http\Response;
 use Slim\Http\ServerRequest;
 
-/**
- * @uses \Battis\OctoPrintPool\Queue\FileManagementStrategies\AbstractStrategy for file management strategy
- */
-class EnqueueFile
+class EnqueueFile extends AbstractAction
 {
-    use OAuthUserSettings, Logging;
+    use RecursivelyInclude, Logging;
 
-    public function __construct(PDO $pdo, LoggerInterface $logger)
+    public function __construct(PDO $pdo, Logger $logger)
     {
-        $this->setPDO($pdo);
+        parent::__construct($pdo);
         $this->setLogger($logger);
     }
 
-    public function __invoke(ServerRequest $request, Response $response, array $args = [])
+    /**
+     * @throws Exception
+     */
+    public function __invoke(ServerRequest $request, Response $response, array $args = []): ResponseInterface
     {
-        $this->setOauthUserId($request);
+        parent::__invoke($request, $response, $args);
+
         $uploadedFiles = $request->getUploadedFiles();
-        $rootPath = $this->getUserSetting('queue_root', __DIR__ . '/../../../../var/queue');
-        $strategy = $this->getUserSetting('queue_file_management_strategy', Hashed::class);
-        $strategy = new $strategy();
-        $tags = $request->getParsedBodyParam('tags', []);
+        $tags = array_filter($request->getParsedBodyParam('tags', []), function ($tag) {
+            return strlen($tag) > 0;
+        });
         $comment = $request->getParsedBodyParam('comment');
+        if ($comment === 'null') {
+            $comment = null;
+        }
+        $queue = Queue::getById($this->getParsedParameter(QUEUE::foreignKey()), null, $this->getPDO(), true);
         $files = [];
-        $insert = $this->pdo->prepare("
-            INSERT INTO `files`
-                SET
-                    `user_id` = :user_id,
-                    `filename` = :filename,
-                    `path` = :path,
-                    `tags` = :tags,
-                    `comment` = :comment
-        ");
-        $get = $this->pdo->prepare("
-            SELECT * FROM `files`
-                WHERE
-                    `user_id` = :user_id AND
-                    `id` = :id
-        ");
-        foreach ($uploadedFiles as $uploadedFile) {
-            if ($path = $strategy($uploadedFile, $rootPath, $tags, $comment)) {
-                if ($insert->execute([
-                    'user_id' => $this->oauthUserId,
-                    'filename' => $uploadedFile->getClientFilename(),
-                    'path' => $path,
-                    'tags' => implode(',', $tags),
-                    'comment' => $comment
-                ])) {
-                    if ($get->execute([
-                        'user_id' => $this->oauthUserId,
-                        'id' => $this->pdo->lastInsertId()
-                    ])) {
-                        if ($fileData = $get->fetch()) {
-                            $file = new File($fileData);
-                            array_push($files, $file);
-                            $this->logger->info("Enqueued `{$file->getFilename()}` to {$this->oauthUserId} queue", [
-                                'file_id' => $file->getId(),
-                                'username_proxy' => $this->usernameProxy($file->getTags())
-                            ]);
-                        }
+        if ($queue instanceof Queue) {
+            $rootPath = $queue->getRoot();
+            if (!$rootPath) {
+                $rootPath = $_ENV['VAR_PATH'];
+            }
+            if (!file_exists($rootPath)) {
+                mkdir($rootPath);
+            }
+            $strategy = $queue->getFileManagementStrategy();
+            if (!$strategy) {
+                $strategy = Hashed::class;
+            }
+            $strategy = new $strategy();
+            foreach ($uploadedFiles as $uploadedFile) {
+                if ($path = $strategy($uploadedFile, $rootPath, $this->getOAuthUserId(), $tags, $comment)) {
+                    $file = File::insert(
+                        [
+                            'queue_id' => $queue->getId(),
+                            'filename' => $uploadedFile->getClientFilename(),
+                            'path' => $path,
+                            'tags' => count($tags) ? implode(',', $tags) : null,
+                            'comment' => $comment,
+                            'dequeued' => null
+                        ],
+                        $this->getOAuthUserId(),
+                        $this->getPDO()
+                    );
+                    if ($file instanceof File) {
+                        array_push($files, $file);
+                        $this->getLogger()->info("Enqueued `{$file->getFilename()}` to {$queue->getName()}", [
+                            'queue_id' => $queue->getId(),
+                            'file_id' => $file->getId(),
+                            'user_id' => $this->getOAuthUserId()
+                        ]);
                     }
                 }
             }
         }
-        return $response->withJson($files);
+        return $response->withJson(
+            $this->recursivelyInclude(
+                $files,
+                $request,
+                [Queue::canonical()],
+                true
+            )
+        );
     }
 }

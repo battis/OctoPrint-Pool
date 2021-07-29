@@ -12,6 +12,7 @@ class Hashed extends AbstractStrategy
     public function process(
         UploadedFileInterface $uploadedFile,
         string $rootPath,
+        string $user_id,
         array $tags = [],
         string $comment = null
     ): string

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "e4335f713eeb47f30c28bad7551cc723",
+    "content-hash": "d5bf36d378e8d5cb903c641022fe6e56",
     "packages": [
         {
             "name": "battis/hydratable",
@@ -12,12 +12,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/battis/hydratable.git",
-                "reference": "225f59c488317140dfdf48f9700227a0205230b3"
+                "reference": "1d38d674b6d3e6cbf72cfe3a658ff4a364ca47f8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/battis/hydratable/zipball/225f59c488317140dfdf48f9700227a0205230b3",
-                "reference": "225f59c488317140dfdf48f9700227a0205230b3",
+                "url": "https://api.github.com/repos/battis/hydratable/zipball/1d38d674b6d3e6cbf72cfe3a658ff4a364ca47f8",
+                "reference": "1d38d674b6d3e6cbf72cfe3a658ff4a364ca47f8",
                 "shasum": ""
             },
             "require": {
@@ -45,7 +45,7 @@
                 "issues": "https://github.com/battis/hydratable/issues",
                 "source": "https://github.com/battis/hydratable/tree/master"
             },
-            "time": "2020-08-06T21:46:37+00:00"
+            "time": "2021-07-29T14:05:53+00:00"
         },
         {
             "name": "battis/web-app-server",
@@ -904,16 +904,16 @@
         },
         {
             "name": "monolog/monolog",
-            "version": "2.3.1",
+            "version": "2.3.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Seldaek/monolog.git",
-                "reference": "9738e495f288eec0b187e310b7cdbbb285777dbe"
+                "reference": "71312564759a7db5b789296369c1a264efc43aad"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Seldaek/monolog/zipball/9738e495f288eec0b187e310b7cdbbb285777dbe",
-                "reference": "9738e495f288eec0b187e310b7cdbbb285777dbe",
+                "url": "https://api.github.com/repos/Seldaek/monolog/zipball/71312564759a7db5b789296369c1a264efc43aad",
+                "reference": "71312564759a7db5b789296369c1a264efc43aad",
                 "shasum": ""
             },
             "require": {
@@ -984,7 +984,7 @@
             ],
             "support": {
                 "issues": "https://github.com/Seldaek/monolog/issues",
-                "source": "https://github.com/Seldaek/monolog/tree/2.3.1"
+                "source": "https://github.com/Seldaek/monolog/tree/2.3.2"
             },
             "funding": [
                 {
@@ -996,7 +996,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2021-07-14T11:56:39+00:00"
+            "time": "2021-07-23T07:42:52+00:00"
         },
         {
             "name": "neomerx/cors-psr7",

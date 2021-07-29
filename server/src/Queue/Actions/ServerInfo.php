@@ -5,6 +5,7 @@ namespace Battis\OctoPrintPool\Queue\Actions;
 
 
 use Battis\WebApp\Server\API\Actions\AbstractAction;
+use Psr\Http\Message\ResponseInterface;
 use Slim\Http\Response;
 use Slim\Http\ServerRequest;
 
@@ -64,7 +65,7 @@ class ServerInfo extends AbstractAction
     }
 
 
-    public function __invoke(ServerRequest $request, Response $response, array $args = []): Response
+    public function __invoke(ServerRequest $request, Response $response, array $args = []): ResponseInterface
     {
         return $response->withJson(['max_upload_size' => self::pretty_file_upload_max_size()]);
     }

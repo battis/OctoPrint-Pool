@@ -4,64 +4,59 @@
 namespace Battis\OctoPrintPool\Queue\Actions;
 
 
-use Battis\OctoPrintPool\Queue\File;
-use Battis\WebApp\Server\OAuth2\Traits\OAuthUserId;
+use Battis\OctoPrintPool\Queue\Objects\File;
+use Battis\OctoPrintPool\Queue\Objects\Queue;
+use Battis\WebApp\Server\API\Actions\AbstractAction;
 use Battis\WebApp\Server\Traits\Logging;
-use Battis\WebApp\Server\Traits\PdoStorage;
+use DateTimeImmutable;
+use Exception;
 use Monolog\Logger;
 use PDO;
+use Psr\Http\Message\ResponseInterface;
 use Slim\Http\Response;
 use Slim\Http\ServerRequest;
 
-class DequeueFile
+class DequeueFile extends AbstractAction
 {
-    use PdoStorage, OAuthUserId, Logging;
+    use Logging;
 
     public function __construct(PDO $pdo, Logger $logger)
     {
-        $this->setPDO($pdo);
+        parent::__construct($pdo);
         $this->setLogger($logger);
     }
 
-    public function __invoke(ServerRequest $request, Response $response, array $args = [])
+    /**
+     * @throws Exception
+     */
+    public function __invoke(ServerRequest $request, Response $response, array $args = []): ResponseInterface
     {
-        $this->setOauthUserId($request);
-        $update = $this->pdo->prepare("
-            UPDATE `files`
-                SET
-                    `queued` = 0
-                WHERE
-                    user_id = :user_id AND
-                    `id` = :id AND
-                    `queued` = 1
-        ");
-        $get = $this->pdo->prepare("
-            SELECT * FROM `files`
-                WHERE
-                    user_id = :user_id AND
-                    `id` = :id
-        ");
-        $file = null;
-        if ($update->execute([
-                'user_id' => $this->oauthUserId,
-                'id' => $args['id']
-            ]) && $update->rowCount() > 0) {
-            if ($get->execute([
-                'user_id' => $this->oauthUserId,
-                'id' => $args['id']
-            ])) {
-                {
-                    if ($fileData = $get->fetch()) {
-                        $file = new File($fileData);
-                        $response = $response->withFileDownload($fileData['path'], $fileData['filename']);
-                        $this->logger->info("Dequeued `{$file->getFilename()}` from {$this->oauthUserId} queue", [
-                            'file_id' => $file->getId(),
-                            'username_proxy' => $this->usernameProxy($file->getTags())
-                        ]);
-                    }
+        parent::__invoke($request, $response, $args);
+        $file = File::getById($this->getParsedParameter(File::foreignKey()), null, $this->getPDO(), true);
+        if ($file instanceof File && $file->isQueued()) {
+            $queue = Queue::getById($file->getQueueId(), null, $this->getPDO(), true);
+            if ($queue instanceof Queue) {
+                if ($file->isAvailable()) {
+                    $this->getLogger()->info("Dequeued {$file->getFilename()} from {$queue->getName()}", [
+                        'queue_id' => $queue->getId(),
+                        'file_id' => $file->getId(),
+                        'user_id' => $this->getOAuthUserId()
+                    ]);
+                    $file->update([
+                        'queued' => 0,
+                        'dequeued' => (new DateTimeImmutable())->format('Y-m-d H:i:s')
+                    ]);
+                    return $response->withFileDownload($file->getPath(), $file->getFilename());
+                } else {
+                    $this->getLogger()->warning("Failed to dequeue {$file->getFilename()} from {$queue->getName()}: no longer available", [
+                        'queue_id' => $queue->getId(),
+                        'file_id' => $file->getId(),
+                        'user_id' => $this->getOAuthUserId()
+                    ]);
+                    return $response->withJson(['error' => 'file no longer available'])->withStatus(410);
                 }
             }
         }
-        return $response;
+        return $response->withStatus(404);
     }
 }
