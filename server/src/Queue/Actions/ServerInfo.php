@@ -65,7 +65,7 @@ class ServerInfo extends AbstractAction
     }
 
 
-    public function __invoke(ServerRequest $request, Response $response, array $args = []): ResponseInterface
+    public function handle(ServerRequest $request, Response $response, array $args = []): ResponseInterface
     {
         return $response->withJson(['max_upload_size' => self::pretty_file_upload_max_size()]);
     }

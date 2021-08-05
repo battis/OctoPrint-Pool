@@ -1,0 +1,18 @@
+@use "~@battis/web-app-client/src/stylesheets/colors";
+@use "~@battis/web-app-client/src/stylesheets/spacing";
+
+.queue.manager {
+  margin: spacing.$padding-major;
+
+  .files {
+    width: 100%;
+
+    tr:nth-child(even) {
+      background: colors.hslaReplace(colors.$focus, $lightness: 95%);
+    }
+
+    td {
+      padding: spacing.$padding-major
+    }
+  }
+}

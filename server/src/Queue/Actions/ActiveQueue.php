@@ -12,16 +12,15 @@ use Slim\Http\ServerRequest;
 
 class ActiveQueue extends AbstractAction
 {
-    public function __invoke(ServerRequest $request, Response $response, array $args = []): ResponseInterface
+    public function handle(ServerRequest $request, Response $response, array $args = []): ResponseInterface
     {
-        parent::__invoke($request, $response, $args);
         return $response->withJson(
             array_filter(
                 File::getByFilter(
                     [
                         File::QUEUED => true,
                         File::AVAILABLE => true,
-                        File::QUEUE_ID => $this->getParsedParameter(File::QUEUE_ID)
+                        File::QUEUE_ID => $args[File::QUEUE_ID]
                     ],
                     null,
                     $this->getPDO(),

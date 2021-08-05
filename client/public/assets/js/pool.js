@@ -104,6 +104,8 @@ class OctoPrintPool_API {
     this.client_id = client_id;
     this.client_secret = client_secret;
 
+    // TODO is there a more elegant solution?
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const api = this;
     this.credentialRetryStrategies = {
       get CACHED() {
@@ -120,6 +122,11 @@ class OctoPrintPool_API {
       }
     };
     this.credentialRetryStrategy = undefined;
+  }
+
+  get authorize_url() {
+    // FIXME trailing slash in pool_url could be a problem
+    return this.pool_url + '/oauth2/authorize';
   }
 
   /**
@@ -183,7 +190,7 @@ class OctoPrintPool_API {
     const authForm = document.createElement('form');
     authForm.target = '_blank';
     authForm.method = 'GET';
-    authForm.action = this.endpointUrl('/oauth2/authorize');
+    authForm.action = this.authorize_url;
     for (const field of Object.keys(authorizationRequest)) {
       let value = authorizationRequest[field];
       if (field === 'redirect_uri') {
@@ -335,14 +342,19 @@ class OctoPrintPool_Plugin {
   }
 }
 
-// noinspection JSUnusedGlobalSymbols
 class OctoPrintPool_Queue extends OctoPrintPool_Plugin {
+
+  constructor({queue_id, plugin_id, pool_url, client_id, client_secret}) {
+    super({plugin_id, pool_url, client_id, client_secret});
+    this.queue_id = queue_id;
+  }
+
   /**
    * @return {Promise<Object[]>}
    */
   async list() {
     return await this.api.call({
-      endpoint: '/queue'
+      endpoint: `/queues/${this.queue_id}/files?queued=true&available=true`
     });
   }
 
@@ -352,7 +364,7 @@ class OctoPrintPool_Queue extends OctoPrintPool_Plugin {
    */
   async dequeue(file_id) {
     return (await this.api.call({
-      endpoint: `/queue/${file_id}`,
+      endpoint: `/queues/${this.queue_id}/files/${file_id}`,
       method: 'DELETE',
       json: false
     }))

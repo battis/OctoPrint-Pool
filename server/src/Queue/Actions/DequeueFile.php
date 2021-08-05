@@ -29,10 +29,9 @@ class DequeueFile extends AbstractAction
     /**
      * @throws Exception
      */
-    public function __invoke(ServerRequest $request, Response $response, array $args = []): ResponseInterface
+    public function handle(ServerRequest $request, Response $response, array $args = []): ResponseInterface
     {
-        parent::__invoke($request, $response, $args);
-        $file = File::getById($this->getParsedParameter(File::foreignKey()), null, $this->getPDO(), true);
+        $file = File::getById($args[File::foreignKey()], null, $this->getPDO(), true);
         if ($file instanceof File && $file->isQueued()) {
             $queue = Queue::getById($file->getQueueId(), null, $this->getPDO(), true);
             if ($queue instanceof Queue) {

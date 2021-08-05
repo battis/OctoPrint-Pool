@@ -46,7 +46,7 @@ module.exports = (env, argv) => {
         },
         output: {
             path: path.join(__dirname, process.env.DIST_PATH),
-            filename: 'assets/[name].js',
+            filename: 'assets/js/[name].js',
             publicPath: publicPath
         },
         module: {
@@ -137,7 +137,7 @@ module.exports = (env, argv) => {
                 argv.host ||
                 `${process.env.LVH_SUBDOMAIN || process.env.APP_NAME}.lvh.me`,
             port: argv.port || `${process.env.LVH_PORT || 8080}`,
-            contentBase: path.join(__dirname, process.env.DIST_PATH),
+            contentBase: path.join(__dirname, process.env.TEMPLATE_PATH),
             historyApiFallback: true,
             allowedHosts: env.allowLocalNetworkAccess,
             open: true
@@ -164,6 +164,9 @@ module.exports = (env, argv) => {
                 ]
             }),
             new HtmlWebpackPlugin({
+                templateParameters: {
+                    fontawesome: process.env.FONTAWESOME
+                },
                 template: path.join(
                     __dirname,
                     process.env.TEMPLATE_PATH,
@@ -173,7 +176,7 @@ module.exports = (env, argv) => {
                 hash: true
             }),
             new MiniCssExtractPlugin({
-                filename: 'assets/[name].css'
+                filename: 'assets/css/[name].css'
             }),
             new ImageMinimizerPlugin({
                 minimizerOptions: {

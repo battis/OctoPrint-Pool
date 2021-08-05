@@ -30,10 +30,8 @@ class EnqueueFile extends AbstractAction
     /**
      * @throws Exception
      */
-    public function __invoke(ServerRequest $request, Response $response, array $args = []): ResponseInterface
+    public function handle(ServerRequest $request, Response $response, array $args = []): ResponseInterface
     {
-        parent::__invoke($request, $response, $args);
-
         $uploadedFiles = $request->getUploadedFiles();
         $tags = array_filter($request->getParsedBodyParam('tags', []), function ($tag) {
             return strlen($tag) > 0;
@@ -42,7 +40,7 @@ class EnqueueFile extends AbstractAction
         if ($comment === 'null') {
             $comment = null;
         }
-        $queue = Queue::getById($this->getParsedParameter(QUEUE::foreignKey()), null, $this->getPDO(), true);
+        $queue = Queue::getById($args[QUEUE::foreignKey()], null, $this->getPDO(), true);
         $files = [];
         if ($queue instanceof Queue) {
             $rootPath = $queue->getRoot();
@@ -58,7 +56,7 @@ class EnqueueFile extends AbstractAction
             }
             $strategy = new $strategy();
             foreach ($uploadedFiles as $uploadedFile) {
-                if ($path = $strategy($uploadedFile, $rootPath, $this->getOAuthUserId(), $tags, $comment)) {
+                if ($path = $strategy($uploadedFile, $rootPath, $request->getAttribute(self::OAUTH_USER_ID), $tags, $comment)) {
                     $file = File::insert(
                         [
                             'queue_id' => $queue->getId(),

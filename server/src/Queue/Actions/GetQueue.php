@@ -4,7 +4,6 @@
 namespace Battis\OctoPrintPool\Queue\Actions;
 
 
-use Battis\OctoPrintPool\Queue\Objects\File;
 use Battis\OctoPrintPool\Queue\Objects\Queue;
 use Battis\WebApp\Server\API\Actions\AbstractAction;
 use Battis\WebApp\Server\API\Actions\Traits\RecursivelyInclude;
@@ -20,13 +19,12 @@ class GetQueue extends AbstractAction
     /**
      * @throws Exception
      */
-    public function __invoke(ServerRequest $request, Response $response, array $args = []): ResponseInterface
+    public function handle(ServerRequest $request, Response $response, array $args = []): ResponseInterface
     {
-        parent::__invoke($request, $response, $args);
         return $response->withJson(
             $this->recursivelyInclude(
                 Queue::getById(
-                    $this->getParsedParameter(Queue::foreignKey()),
+                    $args[Queue::foreignKey()],
                     null,
                     $this->getPDO(),
                     true

@@ -18,6 +18,7 @@ class Queue extends AbstractObject
     public const COMMENT = 'comment';
     public const ROOT = 'root';
     public const FILE_MANAGEMENT_STRATEGY = 'file_management_strategy';
+    public const FILENAME_PATTERN = 'filename_pattern';
 
     /** @var string */
     protected $name;
@@ -33,6 +34,9 @@ class Queue extends AbstractObject
 
     /** @var string|null */
     protected $file_management_strategy;
+
+    /** @var string|null */
+    protected $filename_pattern;
 
     /**
      * @param array $include
@@ -94,4 +98,11 @@ class Queue extends AbstractObject
         return $this->comment;
     }
 
+    /**
+     * @return string|null
+     */
+    public function getFilenamePattern(): ?string
+    {
+        return $this->filename_pattern;
+    }
 }

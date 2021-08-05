@@ -19,15 +19,14 @@ class FilterQueues extends AbstractAction
     /**
      * @throws Exception
      */
-    public function __invoke(ServerRequest $request, Response $response, array $args = []): ResponseInterface
+    public function handle(ServerRequest $request, Response $response, array $args = []): ResponseInterface
     {
-        parent::__invoke($request, $response, $args);
         $queryParams = $request->getQueryParams() ?: [];
         $bodyParams = $request->getParsedBody() ?: [];
         $filter = array_merge($queryParams, $bodyParams, $args);
         return $response->withJson(
             $this->recursivelyInclude(
-                Queue::getByFilter($filter,null, $this->getPDO(), true),
+                Queue::getByFilter($filter, null, $this->getPDO(), true),
                 $request,
                 [],
                 true

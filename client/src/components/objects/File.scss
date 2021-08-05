@@ -1,0 +1,44 @@
+@use "~@battis/web-app-client/src/stylesheets/colors";
+@use "~@battis/web-app-client/src/stylesheets/spacing";
+
+.file {
+  display: flex;
+  flex-direction: row;
+  gap: spacing.$padding-major;
+
+  .restore {
+    color: colors.$gray;
+  }
+
+  .user-info {
+    display: inline-flex;
+    flex-direction: column;
+
+    .comment {
+      font-style: italic;
+    }
+  }
+
+  .button.restore {
+      color: unset;
+
+  }
+}
+
+.file.queued {
+  .restore {
+    display: none;
+  }
+}
+
+.file:not(.queued) {
+  color: colors.$gray;
+
+  .trash {
+    display: none;
+  }
+
+  .button {
+    color: colors.$foreground;
+  }
+}

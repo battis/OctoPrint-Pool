@@ -1,0 +1,121 @@
+@use "~@battis/web-app-client/src/stylesheets/colors";
+@use "~@battis/web-app-client/src/stylesheets/spacing";
+@use "~@battis/web-app-client/src/stylesheets/css_tricks";
+
+$-dropzone-margin: css_tricks.$one-px;
+$-dropzone-padding: 2em;
+$-dropzone-border-width: 5px;
+$-dropzone-border-color: colors.transparent(colors.$gray);
+$-dropzone-highlight-color: colors.transparent(colors.$focus);
+$-file-check-color: #11cd00;
+$-manager-height: 1em + 2 * spacing.$padding-minor;
+
+.queue {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+
+  .manager {
+    position: absolute;
+    inset: calc(100% - #{$-manager-height} - 2 * #{spacing.$padding-minor}) 0 0 0;
+  }
+
+  .uploader {
+    position: absolute;
+    inset: 0 0 2em 0;
+
+    .golden-wrapper {
+      $-total-padding: calc(2 * (#{$-dropzone-padding} + #{$-dropzone-border-width} + #{$-dropzone-margin}));
+      margin: $-dropzone-margin;
+      padding: $-dropzone-padding;
+      height: calc(100% - #{$-total-padding});
+      width: calc(100% - #{$-total-padding});
+
+      border: dashed $-dropzone-border-width $-dropzone-border-color;
+      border-radius: max(2 * #{spacing.$padding-major}, min(5vh, 5vw)); // TODO recalibrate to assume not a full-screen (unless within <Embed/>)
+
+      .golden-content {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+
+        form {
+          .message {
+            text-align: center;
+            margin: 0 0 spacing.$padding-major 0;
+          }
+
+          input[type="file"] {
+            margin: 0;
+            padding: 0;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+          }
+        }
+
+        .uploaded {
+          background: colors.transparent(colors.$background);
+          margin-left: 1em;
+          padding: spacing.$padding-major;
+          border: solid css_tricks.$one-px colors.$gray;
+          border-radius: spacing.$border-radius-major;
+
+          .batch {
+            border-bottom: solid css_tricks.$one-px colors.$gray;
+            padding: spacing.$padding-minor;
+
+            .comment {
+              font-style: italic;
+              margin: 0 0 spacing.$padding-minor 0;
+            }
+
+            .files {
+              display: flex;
+              flex-direction: column;
+              margin: 0 spacing.$padding-minor;
+
+              .file {
+                display: flex;
+                flex-direction: row;
+                height: fit-content;
+
+                .icon {
+                  height: 1em;
+                  width: 1em;
+                  margin-right: 0.5em;
+
+                  .check {
+                    @include colors.fill($-file-check-color);
+                  }
+
+                  .ballot-box {
+                    fill: none;
+                  }
+                }
+              }
+            }
+          }
+
+          .batch:last-of-type {
+            border: none;
+          }
+        }
+
+        .uploaded:empty {
+          display: none;
+        }
+      }
+    }
+  }
+
+  .uploader.target {
+    .golden-wrapper {
+      @include colors.background(colors.transparent($-dropzone-highlight-color));
+    }
+  }
+}
+

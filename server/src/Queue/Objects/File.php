@@ -222,11 +222,11 @@ class File extends AbstractObject
         if ($this->isAvailable()) {
             $size = filesize($this->getPath());
             if ($size) {
-                $units = ['B', 'KB', 'MB', 'GB'];
+                $units = [' bytes', 'KB', 'MB', 'GB'];
                 for ($u = 0; $u < count($units) && $size > 1024; $u++) {
                     $size /= 1024;
                 }
-                return "$size{$units[$u]}";
+                return sprintf('%0.00d%s', $size, $units[$u]);
             }
         }
         return null;

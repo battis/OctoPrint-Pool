@@ -2,11 +2,13 @@
 
 namespace Battis\OctoPrintPool;
 
+use Battis\OctoPrintPool\OAuth2\Actions\RetrieveAuthorizationCode;
 use Battis\OctoPrintPool\OAuth2\Actions\WeakAuthorize;
 use Battis\OctoPrintPool\Queue\Actions\DequeueFile;
 use Battis\OctoPrintPool\Queue\Actions\EnqueueFile;
 use Battis\OctoPrintPool\Queue\Actions\FilterFiles;
 use Battis\OctoPrintPool\Queue\Actions\GetFileInfo;
+use Battis\OctoPrintPool\Queue\Actions\GetMyFiles;
 use Battis\OctoPrintPool\Queue\Actions\GetQueue;
 use Battis\OctoPrintPool\Queue\Actions\FilterQueues;
 use Battis\OctoPrintPool\Queue\Actions\ActiveQueue;
@@ -16,17 +18,9 @@ use Battis\OctoPrintPool\Queue\Actions\UpdateQueue;
 use Battis\WebApp\Server\API\Middleware\RecursiveInclude;
 use Battis\WebApp\Server\CORS\Actions\Preflight;
 use Battis\WebApp\Server\OAuth2\Actions\Authorize;
-use Battis\WebApp\Server\OAuth2\Actions\CreateUser;
-use Battis\WebApp\Server\OAuth2\Actions\DeleteUser;
-use Battis\WebApp\Server\OAuth2\Actions\GetClientDescriptor;
-use Battis\WebApp\Server\OAuth2\Actions\GetMe;
-use Battis\WebApp\Server\OAuth2\Actions\GetUser;
-use Battis\WebApp\Server\OAuth2\Actions\UpdateUser;
 use Battis\WebApp\Server\OAuth2\Middleware\Authorization;
-use Battis\WebApp\Server\OAuth2\Traits\Meify;
-use Chadicus\Slim\OAuth2\Routes\Token;
+use Battis\WebApp\Server\OAuth2\Objects\User;
 use DI\Container;
-use OAuth2\Server;
 use Slim\App;
 use Slim\Interfaces\RouteCollectorProxyInterface as Collector;
 
@@ -41,45 +35,12 @@ $app->setBasePath($_ENV['PUBLIC_PATH'] . "/api/$version");
 $app->options(Preflight::ROUTE, Preflight::class);
 
 
-$app->group('/oauth2', function (Collector $oauth2) use ($container) {
-    $oauth2->map(['GET', 'POST'], Authorize::ROUTE, Authorize::class)->setName('authorize');
-    $oauth2->post(Token::ROUTE, new Token($container->get(Server::class)))->setName('token');
-    $oauth2->get('/client/{client_id}', GetClientDescriptor::class);
-
-    $oauth2->map(['GET', 'POST'], WeakAuthorize::ROUTE, WeakAuthorize::class)->setName('weak-authorize');
-});
+$app->map(['GET', 'POST'], '/oauth2' . WeakAuthorize::ROUTE, WeakAuthorize::class);
+$app->get('/oauth2/state/{state}', RetrieveAuthorizationCode::class);
+Authorize::registerRoutes($app, $container);
 
 $app->group('', function () use ($app) {
-    $app->group('/users', function (Collector $users) {
-        function userPaths(Collector $users)
-        {
-            $users->group('/{user_id}', function (Collector $user) {
-            });
-        }
-
-        /*
-         * TODO RBAC or ACL! Scopes!
-        $users->post('', CreateUser::class);
-        */
-
-        $users->group('/me', function (Collector $me) {
-            $me->get('', GetUser::class);
-            $me->put('', UpdateUser::class);
-            /*
-             * TODO RBAC or ACL! Scopes!
-            $me->delete('', DeleteUser::class);
-            */
-        });
-
-        $users->group('/{user_id}', function (Collector  $user) {
-            $user->get('', GetUser::class);
-            /*
-             * TODO RBAC or ACL! Scopes!
-            $user->put('', UpdateUser::class);
-            $user->delete('', DeleteUser::class);
-            */
-        });
-    });
+    User::registerRoutes($app);
     $app->group('/queues', function (Collector $queues) {
         $queues->get('', FilterQueues::class);
         $queues->group('/{queue_id}', function (Collector $queue) {
@@ -89,6 +50,7 @@ $app->group('', function () use ($app) {
             $queue->group('/files', function (Collector $files) {
                 $files->get('', FilterFiles::class);
                 $files->post('', EnqueueFile::class);
+                $files->get('/mine', GetMyFiles::class);
                 $files->group('/{file_id}', function (Collector $file) {
                     $file->get('', GetFileInfo::class);
                     $file->put('', UpdateFileInfo::class);
@@ -96,6 +58,9 @@ $app->group('', function () use ($app) {
                 });
             });
         });
+    });
+    $app->group('/files', function (Collector $files) {
+        $files->put('/{file_id}', UpdateFileInfo::class);
     });
 })->add(RecursiveInclude::class)->add(Authorization::class);
 

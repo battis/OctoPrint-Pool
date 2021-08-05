@@ -1,7 +1,8 @@
 import {
   API,
   Authentication,
-  JSXFactory, Modal,
+  Embed,
+  JSXFactory,
   OAuth2,
   PageNotFound,
   render,
@@ -10,8 +11,11 @@ import {
   Visual
 } from '@battis/web-app-client';
 import '@battis/web-app-client/src/index.scss';
-import Login from './components/Login';
-import Queue from './components/Queue';
+import Login from './components/ui/Login';
+import Queue from './components/objects/Queue/Queue';
+import ServerInfo from './components/objects/ServerInfo';
+import Uploader from './components/objects/Queue/Uploader';
+import Manager from './components/objects/Queue/Manager';
 
 declare const __PUBLIC_PATH__: string;
 declare const __API_URL__: string;
@@ -25,19 +29,45 @@ Routing.init({
 });
 OAuth2.init({ client_id: __OAUTH_CLIENT_ID__ });
 API.init({ url: __API_URL__ });
-Authentication.init({loginComponent: Login});
-Queue.init();
+Authentication.init({ loginComponent: Login });
+
+const goHomeOnError = () => Routing.navigateTo('/');
 
 Routing
   .add('/', async () => {
     Authentication.requireAuthentication();
-    renderLoadingPage();
-    const me = await API.get({endpoint: '/users/me'});
     render(Visual.goldenCenter(<>
       <h1>OctoPrint Pool</h1>
-      {me && <p>Logged in as: {me.display_name ? `${me.display_name} (${me.username})` : me.username}</p>}
-      <p>Max upload size: {(await API.get({endpoint:'/anonymous/info'})).max_upload_size}</p>
+      <ServerInfo />
+      <ul>
+        {(await Queue.list()).map(queue => <li>{queue.name}: <a href={`/queues/${queue.id}/manage`}>Manage</a> / <a
+          href={`/queues/${queue.id}/upload`}>Upload</a></li>)}
+      </ul>
     </>));
+  })
+  .add('/queues/{id}/upload', async id => {
+    renderLoadingPage();
+    const queue = await Queue.get(id);
+    if (queue) {
+      render(<Embed><Uploader queue={queue} /></Embed>);
+    } else {
+      goHomeOnError();
+    }
+  })
+  .add('/queues/{id}/manage', async id => {
+    renderLoadingPage();
+    const queue = await Queue.get(id);
+    if (queue) {
+      render(<Embed>
+        <Manager
+          user={await API.get({ endpoint: '/users/me' })}
+          queue={queue}
+          files={await API.get({ endpoint: `/queues/${id}/files/mine` })}
+        />
+      </Embed>);
+    } else {
+      goHomeOnError();
+    }
   })
   .addRedirect('/login', Authentication.login_path) // convenient shortcut
   .addRedirect('/logout', Authentication.logout_path) // convenient shortcut

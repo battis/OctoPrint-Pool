@@ -20,12 +20,11 @@ class GetFileInfo extends AbstractAction
     /**
      * @throws Exception
      */
-    public function __invoke(ServerRequest $request, Response $response, array $args = []): ResponseInterface
+    public function handle(ServerRequest $request, Response $response, array $args = []): ResponseInterface
     {
-        parent::__invoke($request, $response, $args);
         return $response->withJson(
             $this->recursivelyInclude(
-                File::getById($this->getParsedParameter(File::foreignKey()), null, $this->getPDO(), true),
+                File::getById($args[File::foreignKey()], null, $this->getPDO(), true),
                 $request,
                 [Queue::canonical()],
                 true

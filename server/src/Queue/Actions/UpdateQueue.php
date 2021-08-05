@@ -19,15 +19,14 @@ class UpdateQueue extends AbstractAction
     /**
      * @throws Exception
      */
-    public function __invoke(ServerRequest $request, Response $response, array $args = []): ResponseInterface
+    public function handle(ServerRequest $request, Response $response, array $args = []): ResponseInterface
     {
-         parent::__invoke($request, $response, $args);
-         $queue = Queue::getById($this->getParsedParameter(Queue::foreignKey()), $this->getOAuthUserId(),
-             $this->getPDO());
-         if ($queue instanceof Queue) {
-             $queue->update($request->getParsedBody());
-             $queue = $this->recursivelyInclude($queue, $request);
-         }
-         return $response->withJson($queue);
+        $queue = Queue::getById($args[Queue::foreignKey()], $request->getAttribute(self::OAUTH_USER_ID),
+            $this->getPDO());
+        if ($queue instanceof Queue) {
+            $queue->update($request->getParsedBody());
+            $queue = $this->recursivelyInclude($queue, $request);
+        }
+        return $response->withJson($queue);
     }
 }

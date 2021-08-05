@@ -20,10 +20,9 @@ class UpdateFileInfo extends AbstractAction
     /**
      * @throws Exception
      */
-    public function __invoke(ServerRequest $request, Response $response, array $args = []): ResponseInterface
+    public function handle(ServerRequest $request, Response $response, array $args = []): ResponseInterface
     {
-        parent::__invoke($request, $response, $args);
-        $file = File::getById($this->getParsedParameter(File::foreignKey()), $this->getOAuthUserId(), $this->getPDO());
+        $file = File::getById($args[File::foreignKey()], $request->getAttribute(self::OAUTH_USER_ID), $this->getPDO());
         if ($file instanceof File) {
             $file->update($request->getParsedBody());
             $file = $this->recursivelyInclude($file, $request, [Queue::canonical()], true);
