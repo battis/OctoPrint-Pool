@@ -8,7 +8,15 @@ use Battis\OctoPrintPool\Queue\Strategies\Filenaming\AbstractFilenamingStrategy;
 use Battis\WebApp\Server\API\Objects\AbstractObject;
 use Battis\WebApp\Server\Traits\ScalarToBoolean;
 use Exception;
+use PDO;
 
+/**
+ * @method static Queue|Queue[]|null get(mixed ...$args)
+ * @method static Queue getById(?string $id, ?string $user_id, PDO $pdo, bool $dangerouslyDisregardUserId = false)
+ * @method static Queue[] getByFilter(array $filter, ?string $user_id, PDO $pdo, bool $dangerouslyDisregardUserId = false)
+ * @method static Queue|Queue[]|null getByQuery(array $params = [], string $whereClause = null, string $groupByClause = null, string $orderByClause = null, string $user_id, PDO $pdo)
+ * @method static Queue|null delete(string $id, string $user_id, PDO $pdo, bool $dangerouslyDisregardUserId = false)
+ */
 class Queue extends AbstractObject
 {
     use ScalarToBoolean;
@@ -19,6 +27,8 @@ class Queue extends AbstractObject
     public const ROOT = 'root';
     public const FILENAMING_STRATEGY = 'filenaming_strategy';
     public const FILENAME_PATTERN = 'filename_pattern';
+    public const CLEANUP_STRATEGY = 'cleanup_strategy';
+    public const CLEANUP_PARAMS = 'cleanup_params';
     public const MANAGEABLE = 'manageable';
 
     /** @var string */
@@ -39,6 +49,11 @@ class Queue extends AbstractObject
     /** @var string|null */
     protected $filename_pattern;
 
+    /** @var string|null */
+    protected $cleanup_strategy;
+
+    protected $cleanup_params;
+
     /** @var bool */
     protected $manageable;
 
@@ -48,6 +63,8 @@ class Queue extends AbstractObject
             switch($property) {
                 case static::MANAGEABLE:
                     return self::scalarToBoolean($value);
+                case static::CLEANUP_PARAMS:
+                    return json_decode($value);
                 default:
                     if ($filter && is_callable($filter)) {
                         return $filter($property, $value);
@@ -55,6 +72,31 @@ class Queue extends AbstractObject
                     return $value;
             }
         });
+    }
+
+    public static function insert(array $data, ?string $user_id, PDO $pdo, bool $dangerouslyDisregardUserId = false): ?AbstractObject
+    {
+        if (isset($data[static::CLEANUP_PARAMS]) && !is_string($data[static::CLEANUP_PARAMS])) {
+            $data[static::CLEANUP_PARAMS] = json_encode($data[static::CLEANUP_PARAMS]);
+        }
+        return parent::insert($data, $user_id, $pdo, $dangerouslyDisregardUserId);
+    }
+
+    public function update(array $data, bool $dangerouslyDisregardUserId = false)
+    {
+        if (isset($data[static::CLEANUP_PARAMS]) && !is_string($data[static::CLEANUP_PARAMS])) {
+            $data[static::CLEANUP_PARAMS] = json_encode($data[static::CLEANUP_PARAMS]);
+        }
+        parent::update($data, $dangerouslyDisregardUserId);
+    }
+
+    /**
+     * @return File[]
+     */
+    public function getAvailableFiles(): array
+    {
+        return File::getByFilter([static::foreignKey() => $this->getId(), File::AVAILABLE => true], null, $this->pdo,
+            true);
     }
 
     /**
@@ -99,6 +141,19 @@ class Queue extends AbstractObject
     public function getFilenamingStrategy(): ?string
     {
         return $this->filenaming_strategy;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getCleanupStrategy(): ?string
+    {
+        return $this->cleanup_strategy;
+    }
+
+    public function getCleanupParams()
+    {
+        return $this->cleanup_params;
     }
 
     /**

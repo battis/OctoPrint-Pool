@@ -4,6 +4,8 @@ namespace Battis\OctoPrintPool;
 
 use DI\Container;
 use Dotenv\Dotenv;
+use Monolog\Handler\RotatingFileHandler;
+use Monolog\Logger;
 use Slim\Factory\AppFactory;
 
 require __DIR__ . '/../vendor/autoload.php';
@@ -13,7 +15,9 @@ date_default_timezone_set($_ENV['TIMEZONE']);
 
 $debugging = boolval($_ENV['DEBUGGING']);
 if ($debugging) {
-    ini_set('error_log', realpath(__DIR__ . '/../../logs/php.log'));
+    $phpLog = realpath(__DIR__ . '/../../logs/php.log');
+    ini_set('error_log', $phpLog);
+    (new Logger('php'))->pushHandler(new RotatingFileHandler($phpLog, 1));
 }
 
 $container = new Container();
