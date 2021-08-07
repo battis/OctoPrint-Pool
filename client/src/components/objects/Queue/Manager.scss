@@ -1,18 +1,37 @@
 @use "~@battis/web-app-client/src/stylesheets/colors";
 @use "~@battis/web-app-client/src/stylesheets/spacing";
+@use "~@battis/web-app-client/src/stylesheets/css_tricks";
+@use "./toggler";
 
 .queue.manager {
-  margin: spacing.$padding-major;
+  .manager {
+    @include toggler.togglee;
+    margin: 0;
+    overflow: auto;
+    font-size: small;
 
-  .files {
-    width: 100%;
-
-    tr:nth-child(even) {
-      background: colors.hslaReplace(colors.$focus, $lightness: 95%);
+    .title {
+      position: fixed;
+      top: spacing.$padding-minor;
+      right: calc(#{spacing.$padding-major} + #{css_tricks.$scrollbar-width});
+      text-shadow: colors.$background 0 0 spacing.$padding-minor;
     }
 
-    td {
-      padding: spacing.$padding-major
+    .files {
+      width: 100%;
+      overflow: auto;
+
+      tr:nth-child(even) {
+        background: colors.hslaReplace(colors.$focus, $lightness: 95%);
+      }
+
+      td {
+        padding: spacing.$padding-minor
+      }
     }
+  }
+
+  .toggler {
+    @include toggler.toggler;
   }
 }

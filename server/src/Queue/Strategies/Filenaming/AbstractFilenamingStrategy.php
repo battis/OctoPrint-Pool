@@ -1,7 +1,7 @@
 <?php
 
 
-namespace Battis\OctoPrintPool\Queue\FileManagementStrategies;
+namespace Battis\OctoPrintPool\Queue\Strategies\Filenaming;
 
 
 use Battis\OctoPrintPool\Queue\Actions\EnqueueFile;
@@ -10,12 +10,12 @@ use Psr\Http\Message\UploadedFileInterface;
 /**
  * Extensible strategy for managing file uploads
  *
- * Implement {@link AbstractStrategy::process()} to determine location and naming of uploaded files. One potential
+ * Implement {@link AbstractFilenamingStrategy::process()} to determine location and naming of uploaded files. One potential
  * area for extension would be add a filtering capability (e.g. only `.gcode` files will be uploaded).
  *
  * @used-by EnqueueFile used to handle uploaded files
  */
-abstract class AbstractStrategy
+abstract class AbstractFilenamingStrategy
 {
     /**
      * @param UploadedFileInterface $uploadedFile
@@ -27,13 +27,14 @@ abstract class AbstractStrategy
      */
     abstract public function process(
         UploadedFileInterface $uploadedFile,
-        string $rootPath,
-        string $user_id,
-        array $tags = [],
-        string $comment = null
+        string                $rootPath,
+        string                $user_id,
+        array                 $tags = [],
+        string                $comment = null
     ): string;
 
-    protected function appendSequenceNumber(string $rootPath, UploadedFileInterface $uploadedFile) {
+    protected function appendSequenceNumber(string $rootPath, UploadedFileInterface $uploadedFile)
+    {
         $filename = pathinfo($uploadedFile->getClientFilename(), PATHINFO_FILENAME);
         $extension = pathinfo($uploadedFile->getClientFilename(), PATHINFO_EXTENSION);
         $sequence = 0;
@@ -44,9 +45,13 @@ abstract class AbstractStrategy
         return $path;
     }
 
-    public function __invoke(UploadedFileInterface $uploadedFile, string $rootPath, string $user_id, array $tags = [],
-string $comment
-    = null)
+    public function __invoke(
+        UploadedFileInterface $uploadedFile,
+        string                $rootPath,
+        string                $user_id,
+        array                 $tags = [],
+        string                $comment = null
+    )
     {
         return $this->process($uploadedFile, $rootPath, $user_id, $tags, $comment);
     }

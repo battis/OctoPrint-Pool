@@ -72,8 +72,8 @@ export default class Uploader extends Component {
   }
 
   public render() {
-    this.element = <div class='queue'>
-      <div class='uploader'>
+    this.element = <div class='queue uploader'>
+      <div class={`uploader ${this.queue.manageable && 'managed' || ''}`}>
         {Visual.goldenCenter(<>
           <form>
             <input type='file' name='file' multiple={true} onchange={this.handleFileDrop.bind(this)} />
@@ -84,7 +84,7 @@ export default class Uploader extends Component {
           <div class='uploaded' />
         </>)}
       </div>
-      <Button class="manager" onclick={() => Routing.navigateTo(`/queues/${this.queue.id}/manage`)}>Manage {this.queue.name}</Button>
+      {this.queue.manageable && <Button class="toggler" onclick={() => Routing.navigateTo(`/queues/${this.queue.id}/manage`)}>Manage my {this.queue.name}</Button>}
     </div>;
 
     document.body.classList.add('iframed');

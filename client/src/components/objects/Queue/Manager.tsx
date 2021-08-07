@@ -3,7 +3,7 @@ import QueueFile from '../File';
 import Queue from './Queue';
 import './Manager.scss';
 
-type ManagerConfig = {user: object, queue: Queue, files: object[]}
+type ManagerConfig = { user: object, queue: Queue, files: object[] }
 
 export default class Manager extends Component {
 
@@ -19,14 +19,18 @@ export default class Manager extends Component {
   }
 
   public render() {
-    return this.element = <div class="queue manager">
-      <h1>{this.user.display_name || this.user.username}'s {this.queue.name}</h1>
-      <Button onclick={() => Routing.navigateTo(`/queues/${this.queue.id}/upload`)}>Upload more files</Button>
-      <table class="files">
-        <tbody>
-        {this.files.map(file => <tr><td>{file}</td></tr>)}
-        </tbody>
-      </table>
-    </div>
+    return this.element = <div class='queue manager'>
+      <div class='manager'>
+        <h3 class="title">{this.user.display_name || this.user.username}'s {this.queue.name}</h3>
+        <table class='files'>
+          <tbody>
+          {this.files.map(file => <tr>
+            <td>{file}</td>
+          </tr>)}
+          </tbody>
+        </table>
+      </div>
+      <Button class='toggler' onclick={() => Routing.navigateTo(`/queues/${this.queue.id}/upload`)}>Upload to {this.queue.name}</Button>
+    </div>;
   }
 }

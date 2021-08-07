@@ -1,13 +1,13 @@
 <?php
 
 
-namespace Battis\OctoPrintPool\Queue\FileManagementStrategies;
+namespace Battis\OctoPrintPool\Queue\Strategies\Filenaming;
 
 
 use Exception;
 use Psr\Http\Message\UploadedFileInterface;
 
-class Hashed extends AbstractStrategy
+class Hashed extends AbstractFilenamingStrategy
 {
     public function process(
         UploadedFileInterface $uploadedFile,

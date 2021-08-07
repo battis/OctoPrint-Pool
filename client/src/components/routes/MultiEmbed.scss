@@ -1,0 +1,19 @@
+@use "~@battis/web-app-client/src/stylesheets/spacing";
+
+.embed {
+  --embeds: 1;
+
+  .multi-embed {
+    position: relative;
+    height: 100%;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    gap: spacing.$padding-major;
+
+    iframe {
+      height: calc(((100% - 5.5em) / var(--embeds)) - #{spacing.$padding-major});
+      border: none;
+    }
+  }
+}

@@ -1,11 +1,11 @@
-import { API, Component, Icon, JSXFactory, render } from '@battis/web-app-client';
+import { API, Button, Component, Icon, JSXFactory, render, Routing } from '@battis/web-app-client';
 
 export default class ServerInfo extends Component {
   public render() {
     const display_name=<span><Icon.Loading/></span>
     const maximum_upload_size = <span><Icon.Loading/></span>
     this.element = <div class='server-info'>
-      <p>Logged in as {display_name}</p>
+      <p>Logged in as {display_name} <Button onclick={() => Routing.navigateTo('/logout')}>Logout</Button></p>
       <p>Maximum upload size: {maximum_upload_size}</p>
     </div>;
 

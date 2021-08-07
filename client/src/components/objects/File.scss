@@ -19,6 +19,12 @@
     }
   }
 
+  .buttons {
+    position: relative;
+    top: -1 * spacing.$padding-minor;
+    margin-bottom: -2 * spacing.$padding-minor;
+  }
+
   .button.restore {
       color: unset;
 

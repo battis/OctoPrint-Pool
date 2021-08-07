@@ -37,6 +37,10 @@ export default class File extends ServerComponent {
     return this.state.dequeued;
   }
 
+  public get created() {
+    return this.state.created;
+  }
+
   public async removeFromQueue() {
     this.element.classList.remove('queued');
     await this.update({ queued: false });
@@ -66,7 +70,7 @@ export default class File extends ServerComponent {
             <label>tags</label>
             <span class='tags'>{this.tags?.join(', ')}</span>
           </HideableValue>
-        </div>&nbsp;(<span class='filesize'>{this.filesize}</span>)
+        </div>&nbsp;(<span class='filesize'>{this.filesize}</span>, uploaded <span class="created">{this.created}</span>)
       </div>
       <div class='buttons'>
         <Button class='trash' onclick={this.removeFromQueue.bind(this)}>

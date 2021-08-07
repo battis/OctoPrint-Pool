@@ -1,12 +1,12 @@
 <?php
 
 
-namespace Battis\OctoPrintPool\Queue\FileManagementStrategies;
+namespace Battis\OctoPrintPool\Queue\Strategies\Filenaming;
 
 
 use Psr\Http\Message\UploadedFileInterface;
 
-class Sequential extends AbstractStrategy
+class Sequential extends AbstractFilenamingStrategy
 {
 
     public function process(

@@ -1,6 +1,7 @@
 @use "~@battis/web-app-client/src/stylesheets/colors";
 @use "~@battis/web-app-client/src/stylesheets/spacing";
 @use "~@battis/web-app-client/src/stylesheets/css_tricks";
+@use "./toggler";
 
 $-dropzone-margin: css_tricks.$one-px;
 $-dropzone-padding: 2em;
@@ -8,21 +9,14 @@ $-dropzone-border-width: 5px;
 $-dropzone-border-color: colors.transparent(colors.$gray);
 $-dropzone-highlight-color: colors.transparent(colors.$focus);
 $-file-check-color: #11cd00;
-$-manager-height: 1em + 2 * spacing.$padding-minor;
 
-.queue {
+.queue.uploader {
   position: absolute;
   width: 100%;
   height: 100%;
 
-  .manager {
-    position: absolute;
-    inset: calc(100% - #{$-manager-height} - 2 * #{spacing.$padding-minor}) 0 0 0;
-  }
-
   .uploader {
-    position: absolute;
-    inset: 0 0 2em 0;
+    @include toggler.togglee;
 
     .golden-wrapper {
       $-total-padding: calc(2 * (#{$-dropzone-padding} + #{$-dropzone-border-width} + #{$-dropzone-margin}));
@@ -110,6 +104,14 @@ $-manager-height: 1em + 2 * spacing.$padding-minor;
         }
       }
     }
+  }
+
+  .toggler {
+    @include toggler.toggler;
+  }
+
+  .uploader:not(.managed) {
+    inset: 0;
   }
 
   .uploader.target {

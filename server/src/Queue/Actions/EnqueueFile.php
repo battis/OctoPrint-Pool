@@ -4,9 +4,9 @@
 namespace Battis\OctoPrintPool\Queue\Actions;
 
 
-use Battis\OctoPrintPool\Queue\FileManagementStrategies\Hashed;
 use Battis\OctoPrintPool\Queue\Objects\File;
 use Battis\OctoPrintPool\Queue\Objects\Queue;
+use Battis\OctoPrintPool\Queue\Strategies\Filenaming\OwnerDirectory;
 use Battis\WebApp\Server\API\Actions\AbstractAction;
 use Battis\WebApp\Server\API\Actions\Traits\RecursivelyInclude;
 use Battis\WebApp\Server\Traits\Logging;
@@ -50,9 +50,9 @@ class EnqueueFile extends AbstractAction
             if (!file_exists($rootPath)) {
                 mkdir($rootPath);
             }
-            $strategy = $queue->getFileManagementStrategy();
+            $strategy = $queue->getFilenamingStrategy();
             if (!$strategy) {
-                $strategy = Hashed::class;
+                $strategy = OwnerDirectory::class;
             }
             $strategy = new $strategy();
             foreach ($uploadedFiles as $uploadedFile) {

@@ -4,7 +4,7 @@
 namespace Battis\OctoPrintPool\Queue\Objects;
 
 
-use Battis\OctoPrintPool\Queue\FileManagementStrategies\AbstractStrategy;
+use Battis\OctoPrintPool\Queue\Strategies\Filenaming\AbstractFilenamingStrategy;
 use Battis\WebApp\Server\API\Objects\AbstractObject;
 use Battis\WebApp\Server\Traits\ScalarToBoolean;
 use Exception;
@@ -17,8 +17,9 @@ class Queue extends AbstractObject
     public const DESCRIPTION = 'description';
     public const COMMENT = 'comment';
     public const ROOT = 'root';
-    public const FILE_MANAGEMENT_STRATEGY = 'file_management_strategy';
+    public const FILENAMING_STRATEGY = 'filenaming_strategy';
     public const FILENAME_PATTERN = 'filename_pattern';
+    public const MANAGEABLE = 'manageable';
 
     /** @var string */
     protected $name;
@@ -33,10 +34,28 @@ class Queue extends AbstractObject
     protected $root;
 
     /** @var string|null */
-    protected $file_management_strategy;
+    protected $filenaming_strategy;
 
     /** @var string|null */
     protected $filename_pattern;
+
+    /** @var bool */
+    protected $manageable;
+
+    public function __construct(array $data, callable $filter = null)
+    {
+        parent::__construct($data, function($property, $value) use ($filter) {
+            switch($property) {
+                case static::MANAGEABLE:
+                    return self::scalarToBoolean($value);
+                default:
+                    if ($filter && is_callable($filter)) {
+                        return $filter($property, $value);
+                    }
+                    return $value;
+            }
+        });
+    }
 
     /**
      * @param array $include
@@ -53,7 +72,7 @@ class Queue extends AbstractObject
         return parent::toArray(
             $include,
             array_merge($exclude, [static::ORDER]),
-            $overrides,
+            [static::MANAGEABLE => $this->isManageable()],
             $dangerouslyDisregardUserId
         );
     }
@@ -75,11 +94,11 @@ class Queue extends AbstractObject
     }
 
     /**
-     * @return AbstractStrategy|null
+     * @return AbstractFilenamingStrategy|null
      */
-    public function getFileManagementStrategy(): ?string
+    public function getFilenamingStrategy(): ?string
     {
-        return $this->file_management_strategy;
+        return $this->filenaming_strategy;
     }
 
     /**
@@ -105,4 +124,13 @@ class Queue extends AbstractObject
     {
         return $this->filename_pattern;
     }
+
+    /**
+     * @return bool
+     */
+    public function isManageable(): bool
+    {
+        return $this->manageable;
+    }
+
 }

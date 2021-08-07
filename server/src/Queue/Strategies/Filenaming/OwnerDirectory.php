@@ -1,13 +1,13 @@
 <?php
 
 
-namespace Battis\OctoPrintPool\Queue\FileManagementStrategies;
+namespace Battis\OctoPrintPool\Queue\Strategies\Filenaming;
 
 
 use Psr\Http\Message\UploadedFileInterface;
 
 // FIXME right now this overwrites files, rather than auto-sequencing them
-class TagHierarchy extends AbstractStrategy
+class OwnerDirectory extends AbstractFilenamingStrategy
 {
 
     public function process(
@@ -18,11 +18,9 @@ class TagHierarchy extends AbstractStrategy
         string $comment = null
     ): string
     {
-        foreach ($tags as $tag) {
-            $rootPath .= "/$tag";
-            if (!file_exists($rootPath)) {
-                mkdir($rootPath);
-            }
+        $rootPath = $rootPath . "/$user_id";
+        if (!file_exists($rootPath)) {
+            mkdir($rootPath);
         }
         $path = $this->appendSequenceNumber($rootPath, $uploadedFile);
         $uploadedFile->moveTo($path);

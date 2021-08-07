@@ -1,0 +1,15 @@
+@use "~@battis/web-app-client/src/stylesheets/spacing";
+
+@mixin toggler() {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+}
+
+@mixin togglee() {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: calc(1.5em + #{spacing.$padding-major});
+}

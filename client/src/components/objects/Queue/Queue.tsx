@@ -28,4 +28,8 @@ export default class Queue extends ServerComponent {
   public set comment(comment) {
     this.state.comment = comment;
   }
+
+  public get manageable(): boolean {
+    return this.state.manageable;
+  }
 }
