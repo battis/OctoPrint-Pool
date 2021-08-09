@@ -84,10 +84,10 @@ export default class Uploader extends Component {
           <div class='uploaded' />
         </>)}
       </div>
-      {this.queue.manageable && <Button class="toggler" onclick={() => Routing.navigateTo(`/queues/${this.queue.id}/manage`)}>Manage my {this.queue.name}</Button>}
+      {this.queue.manageable &&
+      <Button class='toggler' onclick={() => Routing.navigateTo(`/queues/${this.queue.id}/manage`)}>Manage
+        my {this.queue.name}</Button>}
     </div>;
-
-    document.body.classList.add('iframed');
 
     this.enableDragAndDrop();
     this.element.addEventListener('dragenter', this.highlightTarget.bind(this), false);

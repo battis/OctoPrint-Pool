@@ -74,6 +74,13 @@ class Queue extends AbstractObject
         });
     }
 
+    /**
+     * @param array $data
+     * @param string|null $user_id
+     * @param PDO $pdo
+     * @param bool $dangerouslyDisregardUserId
+     * @return Queue|null
+     */
     public static function insert(array $data, ?string $user_id, PDO $pdo, bool $dangerouslyDisregardUserId = false): ?AbstractObject
     {
         if (isset($data[static::CLEANUP_PARAMS]) && !is_string($data[static::CLEANUP_PARAMS])) {

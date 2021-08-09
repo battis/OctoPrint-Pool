@@ -1,5 +1,9 @@
 <?php
 
+use Battis\OctoPrintPool\POSIX;
+
+require_once __DIR__ . '/../vendor/autoload.php';
+
 // using ANSI colors for console readout
 function info($message)
 {
@@ -21,68 +25,82 @@ function accessError($path, $permissions = ['write'])
     error('PHP user will need ' . implode(', ', $permissions) . " permissions for $path");
 }
 
-function shellcmd($cmd) {
+function shell_cmd_exists($cmd): bool
+{
     return !!shell_exec("which $cmd 2> /dev/null");
 }
 
-function filegroupname($path): string {
+function file_group_name($path): string
+{
     return posix_getgrgid(filegroup($path))['name'];
 }
 
+$php_group = false;
 /**
- * @see https://www.php.net/manual/en/function.fileperms.php
+ * The inferred name of the user group for the web server's PHP process (www-data or apache, usually)
+ * @return false|string `false` if cannot be inferred
  */
-function filepermissions($path): string {
-    $perms = fileperms($path);
-
-    switch ($perms & 0xF000) {
-        case 0xC000: // socket
-            $info = 's';
-            break;
-        case 0xA000: // symbolic link
-            $info = 'l';
-            break;
-        case 0x8000: // regular
-            $info = 'r';
-            break;
-        case 0x6000: // block special
-            $info = 'b';
-            break;
-        case 0x4000: // directory
-            $info = 'd';
-            break;
-        case 0x2000: // character special
-            $info = 'c';
-            break;
-        case 0x1000: // FIFO pipe
-            $info = 'p';
-            break;
-        default: // unknown
-            $info = 'u';
+function php_group()
+{
+    global $php_group;
+    if (!$php_group) {
+        if (shell_cmd_exists('ps') && shell_cmd_exists('egrep')) {
+            $processes = explode(PHP_EOL, `ps aux | egrep '(apache|httpd)'`);
+            if (!empty($processes[1])) {
+                $process = explode(' ', $processes[1]);
+                if (!empty($process[0])) {
+                    $php_group = $process[0];
+                }
+            }
+        }
+        if ($php_group) {
+            info("PHP/web server user group inferred to be $php_group");
+        } else {
+            error('Cannot infer PHP/web server user group');
+        }
     }
+    return $php_group;
+}
 
-// Owner
-    $info .= (($perms & 0x0100) ? 'r' : '-');
-    $info .= (($perms & 0x0080) ? 'w' : '-');
-    $info .= (($perms & 0x0040) ?
-        (($perms & 0x0800) ? 's' : 'x' ) :
-        (($perms & 0x0800) ? 'S' : '-'));
+function make_dir_accessible($dir, $purpose)
+{
+    $ok = true;
+    if (!file_exists($dir)) {
+        if (mkdir($dir)) {
+            $dir = realpath($dir);
+            alert("$purpose: created $dir");
+        } else {
+            $ok = false;
+            error("$purpose: could not create $dir");
+        }
+    }
+    if ($ok && file_exists($dir)) {
+        $dir = realpath($dir);
+        info("$purpose: $dir exists");
+        if ($group = php_group()) {
+            if (file_group_name($dir) !== $group) {
+                chgrp($dir, $group) ?
+                    alert("$purpose: $group assigned as group for $dir") :
+                    $ok = false;
+            } else {
+                info("$purpose: $group already assigned as group for $dir");
+            }
 
-// Group
-    $info .= (($perms & 0x0020) ? 'r' : '-');
-    $info .= (($perms & 0x0010) ? 'w' : '-');
-    $info .= (($perms & 0x0008) ?
-        (($perms & 0x0400) ? 's' : 'x' ) :
-        (($perms & 0x0400) ? 'S' : '-'));
-
-// World
-    $info .= (($perms & 0x0004) ? 'r' : '-');
-    $info .= (($perms & 0x0002) ? 'w' : '-');
-    $info .= (($perms & 0x0001) ?
-        (($perms & 0x0200) ? 't' : 'x' ) :
-        (($perms & 0x0200) ? 'T' : '-'));
-
-    return $info;
+            if ($ok) {
+                if (fileperms($dir) & POSIX::GROUP_READ & POSIX::GROUP_WRITE & POSIX::GROUP_EXECUTE) {
+                    POSIX::symbolic_chmod($dir, 'g+rwx') ?
+                        alert("$purpose: g=rwX permissions assigned to $dir") :
+                        $ok = false;
+                } else {
+                    info("$purpose: g=rwX permissions already assigned to $dir");
+                }
+            } else {
+                error("$purpose: did not attempt to set g=rwX permissions for $dir");
+            }
+        } else {
+            error("$purpose: PHP/web server user needs rwx access to $dir");
+        }
+    }
 }
 
 // prepare .env for editing, if necessary
@@ -102,72 +120,12 @@ if (preg_match('/windows/i', php_uname())) {
     exit(0);
 }
 
-// detect apache user to set permissions
-$apache = false;
-if (shellcmd('ps') && shellcmd('egrep')) {
-    $processes = explode(PHP_EOL, `ps aux | egrep '(apache|httpd)'`);
-    if (!empty($processes[1])) {
-        $process = explode(' ', $processes[1]);
-        if (!empty($process[0])) {
-            $apache = $process[0];
-        }
-    }
-}
-if ($apache) {
-    info("Apache user inferred to be $apache, permissions will be set");
-} else {
-    error('Cannot infer Apache user, will not set permissions');
-}
-
-// prepare log files
-$logDir = __DIR__ . "/../../logs";
-if (!file_exists($logDir)) {
-    mkdir($logDir);
-    alert('Logs will be stored in ' . realpath($logDir));
-}
-if ($apache) {
-    if (filegroupname($logDir) !== $apache) {
-        chgrp($logDir, $apache);
-        alert("$apache group set for " . realpath($logDir));
-    }
-    if (filepermissions($logDir) !== 'drwx-w----') {
-        chmod($logDir, 0720);
-        alert("$apache given write permissions to " . realpath($logDir));
-    }
-} else {
-    accessError(realpath($logDir));
-}
-foreach (['server', 'cleanup', 'php'] as $name) {
-    $log = "$logDir/$name.log";
-    if (!file_exists($log)) {
-        touch($log);
-        info("Created $name.log");
-    }
-}
-
-// prepare var directory for file storage
-$var = __DIR__ . '/../../var';
-if (file_exists($var)) {
-    info('var directory is ready to store queued files at ' . realpath($var));
-} else {
-    mkdir($var);
-    alert('var directory created to store queued files at ' . realpath($var));
-}
-if ($apache) {
-    if (filegroupname($var) !== $apache) {
-        chgrp($var, $apache);
-        alert("$apache group set for " . realpath($var));
-    }
-    if (filegroupname($var) !== $apache && filepermissions($var) !== 'dwxrw----') {
-        chmod($var, 0760);
-        alert("$apache given read, write permissions to " . realpath($var));
-    }
-} else {
-    accessError($var, ['read', 'write']);
-}
+php_group(); // just to get the console log in the right order!
+make_dir_accessible(__DIR__ . '/../../logs', 'Server logs');
+make_dir_accessible(__DIR__ . '/../../var', 'File storage');
 
 // append to crontab, if possible
-if (shellcmd('crontab') && shellcmd('grep')) {
+if (shell_cmd_exists('crontab') && shell_cmd_exists('grep')) {
     $scheduler = realpath(__DIR__ . '/scheduler.php');
     $log = realpath(__DIR__ . '/../../logs/cleanup.log');
     if (`crontab -l | grep '* * * * * php "$scheduler"'`) {
@@ -179,4 +137,24 @@ if (shellcmd('crontab') && shellcmd('grep')) {
 } else {
     alert('Not able to schedule cleanup job automatically -- make sure that ' . realpath(__DIR__ . '/scheduler.php') .
         ' is scheduled to run regularly on your system!');
+}
+
+// add octoprint-pool.ini to apache2 php.ini (which should never work on a well-configured system)
+$conf = dirname(str_replace('/cli/', '/apache2/', php_ini_loaded_file())) . '/conf.d';
+$ini = realpath(__DIR__ . '/../../env/octoprint-pool.ini');
+$ok = true;
+if (file_exists($conf)) {
+    $conf = realpath($conf);
+    if (posix_access($conf, POSIX_W_OK)) {
+        if (copy($ini, $conf . "/99-octoprint-pool.ini")) {
+            alert("Copied octoprint-pool.ini to $conf, restart apache to use settings");
+        } else {
+            $ok = false;
+        }
+    } else {
+        $ok = false;
+    }
+}
+if (!$ok) {
+    alert("(Edit and) copy $ini to php.ini apache2 conf directory (probably $conf) to adjust maximum upload size");
 }

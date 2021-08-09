@@ -10,7 +10,13 @@ use DateTimeImmutable;
 use Exception;
 use PDO;
 
-// TODO report file size
+/**
+ * @method static File|null insert(array $data, ?string $user_id, PDO $pdo, bool $dangerouslyDisregardUserId = false)
+ * @method static File|File[]|null get(...$args)
+ * @method static File|null getById(?string $id, ?string $user_id, PDO $pdo, bool $dangerouslyDisregardUserId = false)
+ * @method static File|File[]|null getByQuery(array $params = [], string $whereClause = null, string $groupByClause = null, string $orderByClause = null, string $user_id, PDO $pdo)
+ * @method static File|null delete(string $id, ?string $user_id, PDO $pdo, bool $dangerouslyDisregardUserId = false)
+ */
 class File extends AbstractObject
 {
     use ScalarToBoolean;
@@ -100,7 +106,7 @@ class File extends AbstractObject
      * @param string|null $user_id
      * @param PDO $pdo
      * @param bool $dangerouslyDisregardUserId
-     * @return array
+     * @return File[]
      */
     public static function getByFilter(array $filter, ?string $user_id, PDO $pdo, bool $dangerouslyDisregardUserId = false): array
     {
