@@ -3,17 +3,20 @@
 .embed {
   --embeds: 1;
 
-  .multi-embed {
-    position: relative;
-    height: 100%;
-    inset: 0;
-    display: flex;
-    flex-direction: column;
-    gap: spacing.$padding-major;
+  .embed-wrapper {
+    .multi-embed {
+      height: 100%;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      gap: spacing.$padding-major;
 
-    iframe {
-      height: calc(((100% - 5.5em) / var(--embeds)) - #{spacing.$padding-major});
-      border: none;
+      iframe {
+        position: relative;
+        width: 100%;
+        height: calc(((100% - 5.5em) / var(--embeds)) - #{spacing.$padding-major});
+        border: none;
+      }
     }
   }
 }

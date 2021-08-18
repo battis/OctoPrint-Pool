@@ -77,18 +77,13 @@ $-file-check-color: #11cd00;
                 flex-direction: row;
                 height: fit-content;
 
-                .icon {
-                  height: 1em;
-                  width: 1em;
-                  margin-right: 0.5em;
 
-                  .check {
-                    @include colors.fill($-file-check-color);
-                  }
+                .success {
+                  color: $-file-check-color;
+                }
 
-                  .ballot-box {
-                    fill: none;
-                  }
+                .fail {
+                  color: colors.$danger;
                 }
               }
             }
@@ -119,5 +114,6 @@ $-file-check-color: #11cd00;
       @include colors.background(colors.transparent($-dropzone-highlight-color));
     }
   }
+
 }
 

@@ -12,7 +12,7 @@ const MultiEmbed: PageHandler = async (id_list: string) => {
   const element: HTMLElement = <Embed>
     {serverInfo}
     <div class="multi-embed">
-      {queues.map(id => <iframe src={Routing.buildUrl(`/queues/${id}/upload`)}/>)}
+      {queues.map(id => <iframe src={Routing.buildUrl(`/queues/${id}/upload`)} />)}
     </div>
   </Embed>;
   element.style.setProperty('--embeds', `${queues.length}`);

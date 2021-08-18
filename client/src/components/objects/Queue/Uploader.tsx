@@ -1,19 +1,9 @@
-import {
-  API,
-  Button,
-  Component,
-  JSXFactory,
-  Nullable,
-  Query,
-  render,
-  Routing,
-  Text,
-  Visual
-} from '@battis/web-app-client';
+import { API, Button, Component, JSXFactory, Nullable, Query, Routing, Text, Visual } from '@battis/web-app-client';
 import Icon from '../../ui/Icon';
 import path from 'path';
 import Queue from './Queue';
 import './Uploader.scss';
+import QueueFile from '../File';
 
 type UploaderConfig = { queue: Queue, tags?: string[] }
 
@@ -123,6 +113,7 @@ export default class Uploader extends Component {
 
   private handleFileDrop(event) {
     event.preventDefault();
+    console.log('handle file drop');
     this.unhighlightTarget();
     const files = event.dataTransfer?.files || event.target.files;
     files && this.uploadFiles(files);
@@ -131,18 +122,21 @@ export default class Uploader extends Component {
   private uploadFiles(files) {
     const uploadFile = async (file: File, comment, container) => {
       const status = container.appendChild(<div class='file'><Icon.Loading /> {file.name}</div>);
-      const response: [] = await API.post({
+      const files = (await API.post({
         endpoint: path.join(Queue.serverPath, this.queue.id, 'files'),
         body: Query.getFormData({
           file, comment, 'tags[]': this.tags
         })
-      });
-      if (response.length === 0) {
-        render(status, <><Icon.Close class='danger' /> {file.name}</>);
+      })).map(data => new QueueFile(data));
+      if (files.length > 0) {
+        files.forEach(file => container.insertBefore(<div class='file queued'>
+          <Icon.Check /> <Icon.File /> {file.filename}
+        </div>, status));
+        status.remove();
       } else {
-        for (const item of response) {
-          render(status, <><Icon.Checked /> {item['filename']}</>);
-        }
+        container.replaceChild(<div class="file">
+          <Icon.Close /> <Icon.File/> {file.name}
+        </div>, status);
       }
     };
 
