@@ -5,7 +5,6 @@ use DI\Container;
 use Dotenv\Dotenv;
 use GO\Scheduler;
 use Monolog\Handler\RotatingFileHandler;
-use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 
 require_once __DIR__ . '/../vendor/autoload.php';

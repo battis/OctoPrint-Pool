@@ -57,7 +57,7 @@ class Queue extends AbstractObject
     /** @var bool */
     protected $manageable;
 
-    public function __construct(array $data, callable $filter = null)
+    public function __construct(array $data, callable $filter = null, PDO $pdo = null)
     {
         parent::__construct($data, function($property, $value) use ($filter) {
             switch($property) {
@@ -71,7 +71,7 @@ class Queue extends AbstractObject
                     }
                     return $value;
             }
-        });
+        }, $pdo);
     }
 
     /**

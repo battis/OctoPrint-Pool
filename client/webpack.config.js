@@ -94,12 +94,7 @@ module.exports = (env, argv) => {
                         {
                             loader: 'sass-loader',
                             options: {
-                                implementation: require('sass'),
-                                sassOptions: {
-                                    includePaths: [
-                                        '../../web-app/client/src/stylesheets'
-                                    ]
-                                }
+                                implementation: require('sass')
                             }
                         }
                     ]

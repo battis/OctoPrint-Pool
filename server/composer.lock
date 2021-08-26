@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "63c7a9e30413c4af19284c5b8d11fac3",
+    "content-hash": "fd528ac7badb6def03da6ea5e0a04998",
     "packages": [
         {
             "name": "battis/hydratable",
@@ -2933,8 +2933,9 @@
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
+        "ext-json": "*",
         "ext-pdo": "*",
-        "ext-json": "*"
+        "ext-posix": "*"
     },
     "platform-dev": [],
     "plugin-api-version": "2.1.0"
