@@ -64,7 +64,7 @@ class Queue extends AbstractObject
                 case static::MANAGEABLE:
                     return self::scalarToBoolean($value);
                 case static::CLEANUP_PARAMS:
-                    return json_decode($value);
+                    return json_decode($value, true);
                 default:
                     if ($filter && is_callable($filter)) {
                         return $filter($property, $value);
@@ -168,7 +168,7 @@ class Queue extends AbstractObject
      */
     public function getRoot(): ?string
     {
-        return $this->root;
+        return $this->root ?: $_ENV['VAR_PATH'] . "/{$this->getId()}";
     }
 
     /**

@@ -7,6 +7,7 @@ namespace Battis\OctoPrintPool\Queue\Objects;
 use Battis\WebApp\Server\API\Objects\AbstractObject;
 use Battis\WebApp\Server\Traits\ScalarToBoolean;
 use DateTimeImmutable;
+use DateTimeInterface;
 use Exception;
 use PDO;
 
@@ -161,7 +162,7 @@ class File extends AbstractObject
             array_merge($exclude, [static::PATH, static::ORDER]),
             array_merge($overrides, [
                 static::FILESIZE => $this->getFilesize(),
-                static::DEQUEUED => $this->dequeued ? $this->getDequeued()->format(DateTimeImmutable::ISO8601) : null,
+                static::DEQUEUED => $this->dequeued ? $this->getDequeued()->format(DateTimeInterface::ISO8601) : null,
                 static::QUEUED => $this->isQueued(),
                 static::AVAILABLE => $this->isAvailable()
             ]),

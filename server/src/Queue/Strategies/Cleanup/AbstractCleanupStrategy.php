@@ -12,7 +12,7 @@ abstract class AbstractCleanupStrategy
 
     protected static function cleanableFiles($dir)
     {
-        return array_diff(scandir($dir), ['.', '..', '.DAV']);
+        return array_diff(scandir($dir) ?: [], ['.', '..', '.DAV']);
     }
 
     protected static function emptyDir($dir, Logger $logger = null)
@@ -45,15 +45,19 @@ abstract class AbstractCleanupStrategy
 
     public function __invoke(Queue $queue, array $params = [], Logger $logger = null)
     {
-        $logger && $logger->info(basename(__CLASS__) . ' start', [
+        $parts = explode('\\', static::class);
+        $strategy = end($parts);
+        $logger && $logger->info("$strategy start", [
             'queue_id' => $queue->getId(),
-            'strategy' => __CLASS__,
+            'queue_name' => $queue->getName(),
+            'strategy' => static::class,
             'params' => json_encode($params)
         ]);
         $this->process($queue, $params, $logger);
-        $logger && $logger->info(basename(__CLASS__) . ' end', [
+        $logger && $logger->info("$strategy end", [
             'queue_id' => $queue->getId(),
-            'strategy' => __CLASS__,
+            'queue_name' => $queue->getName(),
+            'strategy' => static::class,
             'params' => json_encode($params)
         ]);
     }

@@ -2,11 +2,16 @@
 
 namespace Battis\OctoPrintPool\Queue\Strategies\Cleanup;
 
+use Battis\OctoPrintPool\Queue\Objects\File;
 use Battis\OctoPrintPool\Queue\Objects\Queue;
 use Monolog\Logger;
+use PDO;
 
 class RollingArchive extends AbstractCleanupStrategy
 {
+    /** @var PDO */
+    private $pdo;
+
     protected static function archive($sourceDir, $targetDir, Logger $logger = null)
     {
         $logger && $logger->info('Archiving from ' . basename($sourceDir) . ' to ' . basename($targetDir) . ' start', [
@@ -25,7 +30,7 @@ class RollingArchive extends AbstractCleanupStrategy
         foreach (self::cleanableFiles($sourceDir) as $file) {
             $path = "$sourceDir/$file";
             if ($path !== $targetDir) {
-                rename($path, "$targetDir/$file");
+                rename($path, "$targetDir/$file"); // FIXME update database
                 $logger && $logger->info("Archived $file", ['path' => realpath($path)]);
             }
         }

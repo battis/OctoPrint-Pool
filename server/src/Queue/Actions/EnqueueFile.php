@@ -6,6 +6,7 @@ namespace Battis\OctoPrintPool\Queue\Actions;
 
 use Battis\OctoPrintPool\Queue\Objects\File;
 use Battis\OctoPrintPool\Queue\Objects\Queue;
+use Battis\OctoPrintPool\Queue\Strategies\Filenaming\AbstractFilenamingStrategy;
 use Battis\OctoPrintPool\Queue\Strategies\Filenaming\OwnerDirectory;
 use Battis\WebApp\Server\API\Actions\AbstractAction;
 use Battis\WebApp\Server\API\Actions\Traits\RecursivelyInclude;
@@ -44,9 +45,6 @@ class EnqueueFile extends AbstractAction
         $files = [];
         if ($queue instanceof Queue) {
             $rootPath = $queue->getRoot();
-            if (!$rootPath) {
-                $rootPath = $_ENV['VAR_PATH'];
-            }
             if (!file_exists($rootPath)) {
                 mkdir($rootPath);
             }
@@ -54,6 +52,7 @@ class EnqueueFile extends AbstractAction
             if (!$strategy) {
                 $strategy = OwnerDirectory::class;
             }
+            /** @var AbstractFilenamingStrategy $strategy */
             $strategy = new $strategy();
             foreach ($uploadedFiles as $uploadedFile) {
                 if ($path = $strategy($uploadedFile, $rootPath, $request->getAttribute(self::OAUTH_USER_ID), $tags, $comment)) {

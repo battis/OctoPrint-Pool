@@ -1,6 +1,7 @@
 <?php
 
 use Battis\OctoPrintPool\Queue\Objects\Queue;
+use Battis\OctoPrintPool\Queue\Strategies\Cleanup\AbstractCleanupStrategy;
 use DI\Container;
 use Dotenv\Dotenv;
 use GO\Scheduler;
@@ -32,11 +33,13 @@ foreach ($queues as $queue) {
 
     if ($strategy = $queue->getCleanupStrategy()) {
         $params = $queue->getCleanupParams();
-        if ($params->cron) {
-            $scheduler->call(function () use ($container, $strategy, $queue, $params) {
-                $strategy($queue, $params);
+        if ($params['cron']) {
+            $scheduler->call(function () use ($logger, $container, $strategy, $queue, $params) {
+                /** @var AbstractCleanupStrategy $strategy */
+                $strategy = new $strategy();
+                $strategy($queue, $params, $logger);
                 return true;
-            })->at($params->cron);
+            })->at($params['cron']);
         }
     }
 }
